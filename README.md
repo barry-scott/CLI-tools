@@ -13,7 +13,7 @@ Example find all python files containing `__future__`:
 ## ssh-wait will wait for host to reboot
 
 ssh-wait is a command that waits until a server
-is able to offer ssh access. See [Source/ssh-wait/ssh-wait.md](blob/master/blob/Source/ssh-wait/ssh-wait.md) for details.
+is able to offer ssh access. See [Source/ssh-wait/ssh-wait.md](Source/ssh-wait/ssh-wait.md) for details.
 
     $ ssh myserver reboot
     $ ssh-wait myserver && ssh myserver
@@ -22,4 +22,4 @@ is able to offer ssh access. See [Source/ssh-wait/ssh-wait.md](blob/master/blob/
 
 The bash_compgen.py provides a simple and pythonic way
 to write command completion logic for bash.
-See [Source/compgen/compgen.md](blob/master/blob/Source/compgen/compgen.md) for details.
+See [Source/compgen/compgen.md](Source/compgen/compgen.md) for details.
