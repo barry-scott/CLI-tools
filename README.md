@@ -4,7 +4,7 @@ A collection of command line (CLI) tools
 ## sfind a simpler find
 
 sfind makes it easier to access the advanced features of
-find and grep. See [Source/sfind/sfind.md](blob/master/blob/Source/sfind/sfind.md) for details.
+find and grep. See [Source/sfind/sfind.md](Source/sfind/sfind.md) for details.
 
 Example find all python files containing `__future__`:
 
