@@ -70,6 +70,10 @@ class CompSequence(object):
         self.comps = comps
 
     def next( self, token ):
+        # if the last part of the squence is another Comp return it.
+        if len(self.comps) == 2 and hasattr( self.comps[1], 'next' ):
+            return self.comps[1]
+
         if len(self.comps) == 1:
             return None
 
