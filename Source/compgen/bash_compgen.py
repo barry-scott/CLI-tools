@@ -134,7 +134,12 @@ class ExpFilename(object):
                 prefix = folder + '/'
 
         result = []
-        all_files = [f for f in os.listdir( folder ) if f.startswith( name )]
+        try:
+            all_files = [f for f in os.listdir( folder ) if f.startswith( name )]
+
+        except OSError:
+            # the folder does not exist - return nothing meaning cannot expand
+            return []
 
         for exclude in self.excludes:
             all_files = [f for f in all_files if not fnmatch.fnmatch( f, exclude )]
