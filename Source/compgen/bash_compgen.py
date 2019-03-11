@@ -6,43 +6,51 @@ import os
 import types
 import fnmatch
 
+__ALL__ = (
+        'compgen',
+        'CompCommand',
+        'CompRepeat',
+        'CompSequence',
+        'ExpAnyOf',
+        'ExpChoice',
+        'ExpFilename',
+        'ExpSshHost',
+        )
 
 def main( argv ):
-    log = open( './qqq.log', 'w', 1 )
-    for name in os.environ:
-        if name.startswith('COMP'):
-            print( '%s: %r' % (name, os.environ[name]), file=log )
-
-    line = os.environ['COMP_LINE']
-    point = int(os.environ['COMP_POINT'])
-
-    print( '%r:%r' % (line[0:point], line[point:]), file=log )
-
-    tokens = BashLineParser( line[0:point] ).tokens()
-    print( 'tokens: %r' % (tokens,), file=log )
-    if len(tokens) <= 1:
-        return
-
     tree = CompCommand( {
         'first': CompSequence( ExpChoice( 'able', 'baker', 'charley' ) ),
         'second': CompSequence( ExpChoice( 'fred', 'joe', 'zoo' ), ExpSshHost() ),
-        'forth': CompRepeat( ExpAnyOf( ExpChoice( '--a', '--r', '--x' ), ExpFilename( exclude=('*~', '*.py[co]') ) ) ),
+        'forth': CompRepeat( ( ExpChoice( '--a', '--r', '--x' ), ExpFilename( exclude=('*~', '*.py[co]') ) ) ),
         'file': CompRepeat( ExpFilename() ),
         } )
+
+    with open( './qqq.log', 'w', 1 ) as log:
+        return compgen( tree, debug=True, debug_log=log )
+
+def compgen( tree, debug=False, debug_log=sys.stderr ):
+    line = os.environ['COMP_LINE']
+    point = int(os.environ['COMP_POINT'])
+
+    tokens = BashLineParser( line[0:point] ).tokens()
+    if debug: print( 'DBG: tokens: %r' % (tokens,), file=debug_log )
+    if len(tokens) <= 1:
+        return
 
     # walk the already completed tokens
     comp = tree
     for token in tokens[1:-1]:
         comp = comp.next( token )
-        print( 'DBG: T: %r comp: %s' % (token, comp.__class__.__name__), file=log )
+        if debug: print( 'DBG: T: %r comp: %s' % (token, comp.__class__.__name__), file=debug_log )
         if comp is None:
             return
 
     for expansion in comp.expand( tokens[-1] ):
-        print( 'DBG: Result: %r' % (expansion,), file=log )
+        if debug: print( 'DBG: Result: %r' % (expansion,), file=debug_log )
         print( expansion )
 
     return 0
+
 
 class CompCommand(object):
     def __init__( self, cmds ):
@@ -138,8 +146,9 @@ class ExpFilename(object):
             all_files = [f for f in os.listdir( folder ) if f.startswith( name )]
 
         except OSError:
-            # the folder does not exist - return nothing meaning cannot expand
+            # empty list means cannot expand
             return []
+
 
         for exclude in self.excludes:
             all_files = [f for f in all_files if not fnmatch.fnmatch( f, exclude )]
