@@ -30,7 +30,9 @@ class SmartColour:
             return 1
 
     def executeCommand( self ):
-        for line in sys.stdin:
+        while True:
+            line = sys.stdin.readline()
+
             for pattern, colour in self.all_patterns:
                 line_parts = []
 
