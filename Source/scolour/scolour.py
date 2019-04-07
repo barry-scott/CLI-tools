@@ -32,6 +32,8 @@ class SmartColour:
     def executeCommand( self ):
         while True:
             line = sys.stdin.readline()
+            if line == '':
+                break
 
             for pattern, colour in self.all_patterns:
                 line_parts = []
@@ -74,8 +76,10 @@ class SmartColour:
                 else:
                     pattern = re.compile( arg )
                     colour = next( args )
-                    # validate colour
-                    self.all_patterns.append( (pattern, colour) )
+                    # TBD validate colour
+                    # add colour names
+                    # change : to ; to avoid quotes on the command line
+                    self.all_patterns.append( (pattern, colour.replace( ':', ';' )) )
 
         except StopIteration:
             raise SmartColourError( 'Need more args' )
