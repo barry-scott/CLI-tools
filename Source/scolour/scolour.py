@@ -103,6 +103,9 @@ class SmartColour:
             print( 'Error: %s' % (e,) )
             return 1
 
+        except KeyboardInterrupt:
+            return 0
+
     def executeCommand( self ):
         while True:
             line = sys.stdin.readline()
