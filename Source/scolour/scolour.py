@@ -112,24 +112,41 @@ class SmartColour:
             if line == '':
                 break
 
+            # list of tuples of (coloured, text)
+            # only colour in text that is not already coloured
+            line_parts = [(False, line)]
+
             for pattern, colour in self.all_patterns:
-                line_parts = []
+                index = 0
 
-                while len(line) > 0:
-                    match = pattern.search( line )
-                    if match is None:
-                        break
+                while index < len(line_parts):
+                    coloured, text = line_parts[index]
 
-                    line_parts.append( line[0:match.start(0)] )
-                    line_parts.append( '\033[%sm%s\033[m' %
-                                        (colour
-                                        ,line[match.start(0):match.end(0)]) )
-                    line = line[match.end(0):]
+                    if coloured:
+                        index += 1
+                        continue
 
-                line_parts.append( line )
-                line = ''.join( line_parts )
+                    match = pattern.search( text )
+                    # no match or match is zero width for patterns like [0-9]*
+                    if match is None or match.start(0) == match.end(0):
+                        index += 1
+                        continue
 
-            sys.stdout.write( line )
+                    pre = text[0:match.start(0)]
+                    middle = text[match.start(0):match.end(0)]
+                    post = text[match.end(0):]
+
+                    if len(pre) > 0:
+                        line_parts.insert( index, (False, pre) )
+                        index += 1
+
+                    line_parts[index] = (True, '\033[%sm%s\033[m' % (colour, middle))
+                    index += 1
+
+                    if len(post) > 0:
+                        line_parts.insert( index, (False, post) )
+
+            sys.stdout.write( ''.join( [text for coloured, text in line_parts] ) )
             if self.opt_line_buffered:
                 sys.stdout.flush()
 
@@ -148,7 +165,7 @@ class SmartColour:
                         self.opt_debug = True
 
                     else:
-                        raise SmartColourError( 'Unknown options "%s:"' % (arg,) )
+                        raise SmartColourError( 'Unknown options "%s"' % (arg,) )
 
                 else:
                     pattern = re.compile( arg )
