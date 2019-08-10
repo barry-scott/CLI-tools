@@ -1,6 +1,10 @@
 #!/bin/bash
+
+# clean up build artifacts
+rm -rf dist build
+
 for tool in \
-    cprint \
+    colour_print \
     ;
 do
     python3.7 setup_${tool}.py sdist bdist_wheel

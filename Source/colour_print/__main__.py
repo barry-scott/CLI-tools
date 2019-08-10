@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 import sys
-import cprint
+import colour_print
 
 def main( argv=None ):
+    err_ct = colour_print.ColourText()
+    err_ct.define( 'error', 'red' )
+
     if argv is None:
         argv = sys.argv
 
     try:
-        ct = cprint.ColourText()
+        ct = colour_print.ColourText()
         ct.initTerminal()
         if len(argv) == 1:
             print()
@@ -23,12 +26,12 @@ def main( argv=None ):
 
         return 0
 
-    except cprint.ColourTextError as e:
-        print( e )
+    except colour_print.ColourTextError as e:
+        print( err_ct( '~error Error:~ %s') % e )
         return 1
 
     except TypeError as e:
-        print( e )
+        print( err_ct( '~error Error:~ %s') % e )
         return 2
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 """
 
-setup.py for CLI-tools cprint
+setup.py for CLI-tools colour print
 
 """
 
@@ -8,21 +8,21 @@ import setuptools
 import os.path
 
 # Use the VERSION defined in __init__.py
-import cprint
+import colour_print
 
 url = 'https://github.com/barry-scott/CLI-tools'
 
 here = os.path.abspath( os.path.dirname(__file__) )
 
 # Get the long description from the README file
-with open( os.path.join(here, 'cprint', 'README.rst'), encoding='utf-8' ) as f:
+with open( os.path.join(here, 'colour_print', 'README.rst'), encoding='utf-8' ) as f:
     long_description = f.read()
 
 def getDevStatusFromVersion():
-    if 'a' in cprint.VERSION:
+    if 'a' in colour_print.VERSION:
         return 'Development Status :: 3 - Alpha'
 
-    elif 'b' in cprint.VERSION:
+    elif 'b' in colour_print.VERSION:
         return 'Development Status :: 4 - Beta'
 
     else:
@@ -33,7 +33,7 @@ setuptools.setup(
 
     libraries = [],
 
-    version=cprint.VERSION,
+    version=colour_print.VERSION,
 
     description='Colour Print',
     long_description=long_description,
@@ -74,8 +74,8 @@ setuptools.setup(
     # What does your project relate to?
     keywords='development',
 
-    packages=['cprint'],
+    packages=['colour_print'],
     entry_points = {
-        'console_scripts': ['cprint=cprint.__main__:main'],
+        'console_scripts': ['colour-print=colour_print.__main__:main'],
         }
     )
