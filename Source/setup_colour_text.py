@@ -8,34 +8,34 @@ import setuptools
 import os.path
 
 # Use the VERSION defined in __init__.py
-import ssh_wait
+import colour_text
 
 url = 'https://github.com/barry-scott/CLI-tools'
 
 here = os.path.abspath( os.path.dirname(__file__) )
 
 # Get the long description from the README file
-with open( os.path.join(here, 'ssh_wait', 'README.md'), encoding='utf-8' ) as f:
+with open( os.path.join(here, 'colour_text', 'README.md'), encoding='utf-8' ) as f:
     long_description = f.read()
 
 def getDevStatusFromVersion():
-    if 'a' in ssh_wait.VERSION:
+    if 'a' in colour_text.VERSION:
         return 'Development Status :: 3 - Alpha'
 
-    elif 'b' in ssh_wait.VERSION:
+    elif 'b' in colour_text.VERSION:
         return 'Development Status :: 4 - Beta'
 
     else:
         return 'Development Status :: 5 - Production/Stable'
 
 setuptools.setup(
-    name='ssh-wait',
+    name='colour-text',
 
     libraries = [],
 
-    version=ssh_wait.VERSION,
+    version=colour_text.VERSION,
 
-    description='SSH wait',
+    description='Colour Print',
     long_description=long_description,
     long_description_content_type='text/markdown',
 
@@ -75,10 +75,8 @@ setuptools.setup(
     # What does your project relate to?
     keywords='development',
 
-    packages=['ssh_wait'],
-    install_requires="colour_text",
-
+    packages=['colour_text'],
     entry_points = {
-        'console_scripts': ['ssh-wait=ssh_wait.__main__:main'],
+        'console_scripts': ['colour-print=colour_text.__main__:main'],
         }
     )

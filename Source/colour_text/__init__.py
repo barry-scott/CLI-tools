@@ -67,6 +67,11 @@ class ColourText:
         self.marker = marker
         self.named_colours = colour_names.copy()
 
+        # define 
+        self.define( 'info', 'green' )
+        self.define( 'error', 'red' )
+        self.define( 'em', 'yellow' )   # Emphasized
+
     def initTerminal( self ):
         if sys.platform == 'win32':
             import ctypes
@@ -144,8 +149,6 @@ class ColourText:
 
 def main( argv ):
     ct = ColourText()
-    ct.define( 'info', 'green' )
-    ct.define( 'error', ('red', 'bg-gray') )
     ct.define( 'I', 'info' )
     ct.define( 'E', 'error' )
     ct.initTerminal()

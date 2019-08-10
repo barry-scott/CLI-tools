@@ -7,7 +7,8 @@ PY=python3.7
 rm -rf dist build
 
 for tool in \
-    colour_print \
+    colour_text \
+    colour_filter \
     ssh_wait \
     smart_find \
     ;

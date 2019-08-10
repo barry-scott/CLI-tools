@@ -1,6 +1,6 @@
 """
 
-setup.py for CLI-tools colour print
+setup.py for CLI-tools colour filter
 
 """
 
@@ -8,34 +8,34 @@ import setuptools
 import os.path
 
 # Use the VERSION defined in __init__.py
-import colour_print
+import colour_filter
 
 url = 'https://github.com/barry-scott/CLI-tools'
 
 here = os.path.abspath( os.path.dirname(__file__) )
 
 # Get the long description from the README file
-with open( os.path.join(here, 'colour_print', 'README.md'), encoding='utf-8' ) as f:
+with open( os.path.join(here, 'colour_filter', 'README.md'), encoding='utf-8' ) as f:
     long_description = f.read()
 
 def getDevStatusFromVersion():
-    if 'a' in colour_print.VERSION:
+    if 'a' in colour_filter.VERSION:
         return 'Development Status :: 3 - Alpha'
 
-    elif 'b' in colour_print.VERSION:
+    elif 'b' in colour_filter.VERSION:
         return 'Development Status :: 4 - Beta'
 
     else:
         return 'Development Status :: 5 - Production/Stable'
 
 setuptools.setup(
-    name='colour-print',
+    name='colour-filter',
 
     libraries = [],
 
-    version=colour_print.VERSION,
+    version=colour_filter.VERSION,
 
-    description='Colour Print',
+    description='Colour Filter',
     long_description=long_description,
     long_description_content_type='text/markdown',
 
@@ -75,8 +75,9 @@ setuptools.setup(
     # What does your project relate to?
     keywords='development',
 
-    packages=['colour_print'],
+    packages=['colour_filter'],
+    install_requires="colour_text",
     entry_points = {
-        'console_scripts': ['colour-print=colour_print.__main__:main'],
+        'console_scripts': ['colour-filter=colour_filter.__main__:main'],
         }
     )
