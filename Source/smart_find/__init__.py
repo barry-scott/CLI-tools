@@ -6,6 +6,8 @@ import os
 import subprocess
 import json
 
+VERSION = '1.0.0'
+
 default_config_json = u'''{
     "folders_to_prune": [".svn", ".git", ".hg"],
     "files_to_prune":   ["*~"]
