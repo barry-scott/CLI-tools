@@ -1,9 +1,7 @@
-#!/usr/bin/env python
 from __future__ import print_function
 
 import sys
-import time
-import socket
+import ssh_wait
 
 def usage():
     print( '''Usage: ssh-wait <options> <host>
@@ -23,17 +21,24 @@ on <host>.
           name of a port number. Default is ssh.
 ''' )
 
-def main( argv ):
+def main( argv=None ):
+    if argv is None:
+        argv = sys.argv
+
     host = None
     service = 'ssh'
     wait_limit = 600
     opt_wait = True
     opt_verbose = False
 
+    if len(argv) == 1:
+        usage()
+        return 1
+
     for arg in argv[1:]:
         if arg.startswith( '--' ):
             if arg == '--help':
-                ussage()
+                usage()
                 return 0
 
             if arg == '--nowait':
@@ -63,38 +68,14 @@ def main( argv ):
             print( 'Unnecessary arg %r' % (arg,) )
             return 2
 
-    try:
-        # assume numeric service
-        port = int(service)
+    if opt_verbose:
+        log_fn = print
+    else:
+        log_fn = None
 
-    except ValueError:
-        try:
-            port = socket.getservbyname( service )
-        except socket.error as e:
-            print( 'Cannot convert service %s: %s' % (service, e) )
-            return 2
-
-    wait_limit = wait_limit + time.time()
-
-    last_error = 'unknown'
-
-    if opt_verbose: print( 'Connecting to %s:%s ...' % (host, service) )
-    while time.time() < wait_limit:
-        try:
-            s = socket.create_connection( (host, service), 0.1 )
-            if opt_verbose: print( 'Connected to %s:%s' % (host, service) )
-            return 0
-
-        except (socket.error, socket.timeout, socket.gaierror) as e:
-            last_error = str(e)
-            if not opt_wait:
-                if opt_verbose: print( 'Failed to connect: %s' % (last_error,) )
-                return 1
-
-            time.sleep( 0.1 )
-
-    if opt_verbose: print( 'Wait limit reached: %s' % (last_error,) )
-    return 1
+    return ssh_wait.ssh_wait( host, service=service,
+                     wait=opt_wait, wait_limit=wait_limit,
+                     log_fn=log_fn )
 
 if __name__ == '__main__':
-    sys.exit( main( sys.argv ) )
+    sys.exit( main() )
