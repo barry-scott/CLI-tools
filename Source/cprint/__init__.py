@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+VERSION = '1.0.0'
+
 import sys
 
 '''
@@ -99,6 +101,12 @@ class ColourText:
         all_parts = colour_text.split( self.marker )
         state = 'plain'
         all_converted_text = []
+        if len(all_parts) == 0:
+            return 0
+
+        if (len(all_parts) % 2) != 1:
+            raise ColourTextError( 'Expecting pairs of the marker %r in %r' % (self.marker, colour_text ) )
+
         for part in all_parts:
             if state == 'plain':
                 all_converted_text.append( part )
@@ -113,11 +121,11 @@ class ColourText:
                     # a colour region "colour this ~name text~ here"
                     name_text = part.split( None, 1 )
                     if len(name_text) != 2:
-                        raise ColourTextError( 'Expecting colout name and text in %r' % (part,) )
+                        raise ColourTextError( 'Expecting colour name and text in %r' % (part,) )
 
                     name, text = name_text
                     if name not in self.named_colours:
-                        raise ColourTextError( 'Unknown colour name %r in %r' % (name, colour_text) )
+                        raise ColourTextError( 'Colour name %r has not been defined. Used in %r' % (name, colour_text) )
 
                     sgr = self.named_colours[ name ]
                     all_converted_text.append( '\x1b[%sm%s\x1b[m' % (sgr, text) )
