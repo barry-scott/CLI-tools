@@ -1,19 +1,46 @@
 # CLI-tools
+
 A collection of command line (CLI) tools
 
-## sfind a simpler find
+## colour_text and colour-print
 
-sfind makes it easier to access the advanced features of
-find and grep. See [Source/sfind/sfind.md](Source/sfind/sfind.md) for details.
+colour-print is a command that makes print coloured text
+easy to do on Unix, macOS or Windows.
+
+The command uses markup using ~colour-name text~.
+
+    $ colour-print "~info Info:~ this is an ~em informational~ message"
+    $ colour-print "~error Error: This is an error message"
+
+From python use the ColourText class to implement the same features.
+
+    from colour_text import ColourText
+
+    ct = ColourText()
+    print( ct('~red Some red text~ and some ~green Green text~') )
+
+## colour-filter colour parts of lines
+
+colour-filter reads lines from its input, colours part of the line and prints the result on its output.
+
+For example colour the output of a build script. Colour Info: in green
+and all of the line that starts Error: in red.
+
+   $ ./build.sh 2>&1 | colour-filter '^Info:' green 'Error:.*' red
+
+## smart_find a smarter, simpler, find
+
+smart-find makes it easier to access the advanced features of
+find and grep. See [Source/smart-find/README.md](Source/smart-find/README.md) for details.
 
 Example find all python files containing `__future__`:
 
-    $ sfind '*.py' -c __future__
+    $ smart-find '*.py' -c __future__
 
-## ssh-wait will wait for host to reboot
+## ssh-wait will wait for a host to reboot
 
 ssh-wait is a command that waits until a server
-is able to offer ssh access. See [Source/ssh-wait/ssh-wait.md](Source/ssh-wait/ssh-wait.md) for details.
+is able to offer ssh access. See [Source/ssh_wait/README.md](Source/ssh_wait/README.md) for details.
 
     $ ssh myserver reboot
     $ ssh-wait myserver && ssh myserver
