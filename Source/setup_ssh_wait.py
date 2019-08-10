@@ -15,7 +15,7 @@ url = 'https://github.com/barry-scott/CLI-tools'
 here = os.path.abspath( os.path.dirname(__file__) )
 
 # Get the long description from the README file
-with open( os.path.join(here, 'ssh_wait', 'ssh-wait.md'), encoding='utf-8' ) as f:
+with open( os.path.join(here, 'ssh_wait', 'README.md'), encoding='utf-8' ) as f:
     long_description = f.read()
 
 def getDevStatusFromVersion():
@@ -37,6 +37,7 @@ setuptools.setup(
 
     description='SSH wait',
     long_description=long_description,
+    long_description_content_type='text/markdown',
 
     # The project's main homepage.
     url=url,
