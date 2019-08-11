@@ -13,7 +13,7 @@ def ssh_wait( host, service='ssh', wait=True, wait_limit=600, log_fn=print ):
             port = socket.getservbyname( service )
         except socket.error as e:
             log_fn( 'Cannot convert service %s: %s' % (service, e) )
-            return 2
+            return 3
 
     wait_limit = wait_limit + time.time()
 
@@ -35,4 +35,4 @@ def ssh_wait( host, service='ssh', wait=True, wait_limit=600, log_fn=print ):
             time.sleep( 0.1 )
 
     if log_fn is not None: log_fn( 'Wait limit reached: %s' % (last_error,) )
-    return 1
+    return 2
