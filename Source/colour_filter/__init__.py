@@ -4,7 +4,7 @@ import sys
 import os
 import re
 
-VERSION = '1.0.0'
+VERSION = '1.0.1'
 
 colour_names = {
     'bold':         '1',
@@ -83,7 +83,6 @@ class ColourFilter:
         all_colour_parts = [colour_names.get(colour, '0') for colour in all_colour_parts]
 
         self.all_patterns.append( (pattern, ';'.join(all_colour_parts)) )
-
 
     def filterLines( self, input_file, output_file, line_buffered ):
         while True:

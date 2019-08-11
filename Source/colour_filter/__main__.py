@@ -37,6 +37,8 @@ def main():
     ct = colour_text.ColourText()
     cf = colour_filter.ColourFilter()
 
+    ct.initTerminal()
+
     try:
         while True:
             arg = next( args, None )
