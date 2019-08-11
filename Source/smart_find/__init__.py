@@ -236,10 +236,12 @@ class SmartFind:
             try:
                 while True:
                     line = p.stdout.readline()
-                    if line == '':
+                    if line == b'':
                         break
 
-                    #print( 'line: %r' % (line,) )
+                    line = line.decode( 'utf-8' )
+
+                    # print( 'line: %r' % (line,) )
                     if sys.platform == 'darwin':
                         # mac grep is not as configurable as gnu grep
                         parts = line.split( ':', 2 )

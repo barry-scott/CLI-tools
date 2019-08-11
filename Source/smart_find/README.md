@@ -1,14 +1,14 @@
-# sfind
+# smart-find
 
-sfind makes it easier to access the advanced features of
+smart-find makes it easier to access the advanced features of
 find and grep.
 
 ## Usage
 
 Use the `-help` option to show the sfind usage.
 
-    $ sfind -help
-    Usage: sfind
+    $ smart-find -help
+    Usage: smart-find
 
         -help               - print this help
         -contains (-c)      - grep for string in found files

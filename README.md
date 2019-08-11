@@ -4,19 +4,22 @@ A collection of command line (CLI) tools
 
 ## colour_text and colour-print
 
-colour-print is a command that makes print coloured text
-easy to do on Unix, macOS or Windows.
+colour-print is a command that makes printing coloured text
+easy to do on Unix, macOS and Windows.
 
-The command uses markup using ~colour-name text~.
+See [Source/colour_text/README.md](Source/colour_text/README.md) for details.
 
-    $ colour-print "~info Info:~ this is an ~em informational~ message"
-    $ colour-print "~error Error: This is an error message"
+For example:
+
+    $ colour-print "~info Info:~ Home folder is %s" "$HOME"
 
 From python use the ColourText class to implement the same features.
 
     from colour_text import ColourText
 
     ct = ColourText()
+    ct.initTerminal()
+
     print( ct('~red Some red text~ and some ~green Green text~') )
 
 ## colour-filter colour parts of lines
