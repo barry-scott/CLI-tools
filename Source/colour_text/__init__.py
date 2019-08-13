@@ -57,7 +57,6 @@ colour_names = {
     'bg-blue':      '44',
     'bg-magenta':   '45',
     'bg-cyan':      '46',
-    'bg-gray':      '47',
     'bg-white':     '47',
 }
 

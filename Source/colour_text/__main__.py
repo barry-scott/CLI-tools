@@ -12,9 +12,10 @@ usage = '''~green Usage:~  %(progname)s ~white string~
 easier to do on Unix, macOS and Windows.
 
 The command uses markup using ~~colour-name text~~.
+The default marker is ~~ (tilda), which can be change using the ~yellow -m~ options.
 
-    $ %(progname)s "~~info Info:~~ this is an ~~em informational~~ message"
-    ~info Info:~ this is an ~em informational~ message
+    $ %(progname)s "~~info Info:~~ This is an ~~em informational~~ message"
+    ~info Info:~ This is an ~em informational~ message
 
     $ %(progname)s "~~error Error: This is an error message~~"
     ~error Error: This is an error message~
@@ -24,13 +25,22 @@ The first argument is treated as a format string if there are more arguments.
     $ %(progname)s "~~info Info:~~ Home folder is %%s" "$HOME"
     ~info Info:~ Home folder is /home/barry
 
+The colour-name can be made up of multiple names seperated by ";".
+
+    $ %(progname)s "~~lightyellow;bg-blue yellow on blue background ~~"
+    ~lightyellow;bg-blue  light yellow on blue background ~
+
+
 Options:
 
     ~yellow --help~, ~yellow -h~  This help text
     ~yellow -m~~white marker~    set the marker to the string ~white marker~
                 The default marker is ~~.
 
-Defined colour-names:
+Colour-names that start with "bg-" are blackground colours.
+The semantic colour-names are "info", "error" and "em" (emphasis).
+
+The builtin colour-names are:
 '''
 
 
@@ -55,13 +65,16 @@ def main( argv=None ):
     for arg in args:
         if arg in ('-h', '--help'):
             print( msg_ct(usage) % {'progname': progname} )
-            bg_colours = [name for name in colour_text if name.startswith( 'bg-' )]
-            fg_colours = [name for name in colour_text if !name.startswith( 'bg-' )]
 
+            # Print the grid of defeined colours.
+
+            bg_colours = [name for name in colour_text.colour_names if name.startswith( 'bg-' )]
+            fg_colours = [name for name in colour_text.colour_names if not name.startswith( 'bg-' )]
+
+            print(            '%13s %s' % ('', ' '.join(        '%s' % (bg,) for bg in bg_colours )) )
             for fg in fg_colours:
-                for bg in bg_colours:
-                    print( '%15s ' )
-                print( msg_ct('    %15s ~bg-black;%s  Dark-mode example ~ ~%s;bg-white Light-mode example ~' % (name, name, name)) )
+                print( msg_ct('%13s %s' % (fg, ' '.join( '~%s;%s %*s~' % (fg, bg, -len(bg), 'Sample') for bg in bg_colours) )) )
+
             return 0
 
         elif arg.startswith( '-m' ):
