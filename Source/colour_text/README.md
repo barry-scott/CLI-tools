@@ -10,7 +10,7 @@ The command uses markup using `~colour-name text~`.
 
 ``` bash
     $ colour-print "~info Info:~ this is an ~em informational~ message"
-    $ colour-print "~error Error: This is an error message"
+    $ colour-print "~error Error: This is an error message~"
 ```
 
 The first argument is treated as a format string if there are more arguments.

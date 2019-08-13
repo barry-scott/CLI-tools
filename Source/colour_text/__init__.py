@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-VERSION = '1.0.0'
+# coding=utf-8
+
+VERSION = '1.0.1'
 
 import sys
 
@@ -43,7 +45,7 @@ colour_names = {
     'lightgreen':   '32;1',
     'lightyellow':  '33;1',
     'lightblue':    '34;1',
-    'lightmagenta,':'35;1',
+    'lightmagenta': '35;1',
     'lightcyan':    '36;1',
     'white':        '37;1',
 
@@ -124,15 +126,13 @@ class ColourText:
 
                 else:
                     # a colour region "colour this ~name text~ here"
-                    name_text = part.split( None, 1 )
+                    name_text = part.split( ' ', 1 )
                     if len(name_text) != 2:
                         raise ColourTextError( 'Expecting colour name and text in %r' % (part,) )
 
                     name, text = name_text
-                    if name not in self.named_colours:
-                        raise ColourTextError( 'Colour name %r has not been defined. Used in %r' % (name, colour_text) )
 
-                    sgr = self.named_colours[ name ]
+                    sgr = self._toSgr( name.split(';') )
                     all_converted_text.append( '\x1b[%sm%s\x1b[m' % (sgr, text) )
 
                 state = 'plain'
