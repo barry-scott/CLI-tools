@@ -46,6 +46,7 @@ The builtin colour-names are:
 
 def main( argv=None ):
     msg_ct = colour_text.ColourText()
+    msg_ct.initTerminal()
 
     marker = '~'
     text_args = []
@@ -94,7 +95,6 @@ def main( argv=None ):
 
     try:
         ct = colour_text.ColourText( marker=marker )
-        ct.initTerminal()
 
         if len(text_args) == 0:
             print()
