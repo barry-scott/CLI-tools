@@ -71,9 +71,15 @@ def main( argv=None ):
             bg_colours = [name for name in colour_text.colour_names if name.startswith( 'bg-' )]
             fg_colours = [name for name in colour_text.colour_names if not name.startswith( 'bg-' )]
 
-            print(            '%13s %s' % ('', ' '.join(        '%s' % (bg,) for bg in bg_colours )) )
+            no_bg = 'no bg'
+            len_no_bg = len(no_bg)
+            sample = 'Sample'
+            len_sample = len(sample)
+
+            print( '%13s %*s %s' % ('', -max( len_no_bg, len_sample ), no_bg, ' '.join( '%*s' % (-max( len_sample, len(bg) ), bg) for bg in bg_colours )) )
             for fg in fg_colours:
-                print( msg_ct('%13s %s' % (fg, ' '.join( '~%s;%s %*s~' % (fg, bg, -len(bg), 'Sample') for bg in bg_colours) )) )
+                print( msg_ct('%13s ~%s %*s~ %s' % (fg, fg, -max( len(no_bg), len(sample) ), sample,
+                        ' '.join( '~%s;%s %*s~' % (fg, bg, -max( len(bg), len(sample) ), sample) for bg in bg_colours ))) )
 
             return 0
 
