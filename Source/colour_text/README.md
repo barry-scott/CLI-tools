@@ -19,6 +19,8 @@ The first argument is treated as a format string if there are more arguments.
     $ colour-print "<>info Info:<> Home folder is %s" "$HOME"
 ```
 
+![screenshot of help output](https://raw.githubusercontent.com/barry-scott/CLI-tools/master/Source/colour_text/colour-print-help.png)
+
 # class ColourText
 
 The `ColourText` class converts strings with colour markup into
