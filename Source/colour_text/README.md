@@ -6,17 +6,17 @@
 easier to do on Unix, macOS and Windows. It uses the `ColourText`
 class to colour the text.
 
-The command uses markup using `~colour-name text~`.
+The command uses markup using `<>colour-name text<>`.
 
 ``` bash
-    $ colour-print "~info Info:~ this is an ~em informational~ message"
-    $ colour-print "~error Error: This is an error message~"
+    $ colour-print "<>info Info:<> this is an <>em informational<> message"
+    $ colour-print "<>error Error: This is an error message<>"
 ```
 
 The first argument is treated as a format string if there are more arguments.
 
 ``` bash
-    $ colour-print "~info Info:~ Home folder is %s" "$HOME"
+    $ colour-print "<>info Info:<> Home folder is %s" "$HOME"
 ```
 
 # class ColourText
@@ -35,7 +35,7 @@ name a space and the text to be coloured ending with the marker.
     ct = ColourText()
     ct.initTerminal()
 
-    print( ct.convert( "The next section is in green: ~green example~." ) )
+    print( ct.convert( "The next section is in green: <>green example<>." ) )
 ```
 
 To include the marker as literal text use two adjacent markers.
@@ -46,7 +46,7 @@ To include the marker as literal text use two adjacent markers.
     ct = ColourText()
     ct.initTerminal()
 
-    print( ct("A ~red literal tilda~ ~~ in the string") )
+    print( ct("A <>red literal marker<> <><> in the string") )
 ```
 
 ColoutText can be use with gettext for internationalized applications.
@@ -58,7 +58,7 @@ ColoutText can be use with gettext for internationalized applications.
     ct = ColourText()
     ct.initTerminal()
 
-    message = "~red Error: cannot open file %s~"
+    message = "<>red Error: cannot open file %s<>"
     i18n_message = _(message)
     coloured_i18n_message = ct(i18n_message)
     formatted_message = coloured_i18n_message % (file_name,)
@@ -66,15 +66,15 @@ ColoutText can be use with gettext for internationalized applications.
     print( formatted_message )
 
     # or in one line
-    print ct( _("~red Error: cannot open file %s~") ) % (file_name,) )
+    print ct( _("<>red Error: cannot open file %s<>") ) % (file_name,) )
 ```
 
 class ColourText
 
-- `__init__( marker='~' )`
+- `__init__( marker='<>' )`
 
     The `marker` is the string used to markup the colour sections
-    which defaults to tilda (`~`).
+    which defaults to tilda (`<>`).
 
 - `initTerminal()`
 
@@ -109,7 +109,7 @@ class ColourText
         ct.define( 'info', 'green' )
         ct.define( 'error', ('red', 'bg-white') )
 
-        ct( "Error messages are ~error shown like this~" ) 
+        ct( "Error messages are <>error shown like this<>" ) 
 ```
 
 - `convert( colour_text )`

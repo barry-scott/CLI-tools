@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-VERSION = '1.0.1'
+VERSION = '1.0.2'
 
 import sys
 
@@ -64,7 +64,7 @@ class ColourTextError(Exception):
     pass
 
 class ColourText:
-    def __init__( self, marker='~' ):
+    def __init__( self, marker='<>' ):
         self.marker = marker
         self.named_colours = colour_names.copy()
 
