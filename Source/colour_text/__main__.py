@@ -74,10 +74,17 @@ def main( argv=None ):
 
             no_bg = 'no bg'
             len_no_bg = len(no_bg)
+            no_fg = 'no fg'
+            len_no_fg = len(no_fg)
             sample = 'Sample'
             len_sample = len(sample)
 
+            # header with bg names
             print( '%13s %*s %s' % ('', -max( len_no_bg, len_sample ), no_bg, ' '.join( '%*s' % (-max( len_sample, len(bg) ), bg) for bg in bg_colours )) )
+            # line for no fg colour
+            print( msg_ct('%13s %*s %s' % (no_fg, -max( len(no_fg), len(sample) ), sample,
+                    ' '.join( '<>%s %*s<>' % (bg, -max( len(bg), len(sample) ), sample) for bg in bg_colours ))) )
+            # lines for each fg colout
             for fg in fg_colours:
                 print( msg_ct('%13s <>%s %*s<> %s' % (fg, fg, -max( len(no_bg), len(sample) ), sample,
                         ' '.join( '<>%s;%s %*s<>' % (fg, bg, -max( len(bg), len(sample) ), sample) for bg in bg_colours ))) )
