@@ -4,7 +4,7 @@ import sys
 import os
 import re
 
-VERSION = '1.0.1'
+VERSION = '1.0.2'
 
 colour_names = {
     'bold':         '1',
