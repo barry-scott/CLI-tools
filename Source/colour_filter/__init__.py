@@ -84,6 +84,9 @@ class ColourFilter:
 
         self.all_patterns.append( (pattern, ';'.join(all_colour_parts)) )
 
+    def patternList( self ):
+        return [(re_pattern.pattern, colour) for re_pattern, colour in self.all_patterns]
+
     def filterLines( self, input_file, output_file, line_buffered ):
         while True:
             line = input_file.readline()
