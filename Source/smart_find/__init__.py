@@ -21,8 +21,8 @@ class SmartFind:
     '''
     Find goals
     * Simple find is short to type
-    * Find . -name <filename-pattern> => sfind <filename-pattern> 
-    * Find dir1 dir2 <filename-pattern> => sfind dir1 dir2 <filename-pattern> 
+    * Find . -name <filename-pattern> => smart-find <filename-pattern> 
+    * Find dir1 dir2 <filename-pattern> => smart-find dir1 dir2 <filename-pattern> 
     * Find new files —since <time spec>, —before <time spec>
     * Add —contains <regex> to grep in found files
     * Only matches type f? Or type file, dir and symlink
@@ -50,7 +50,7 @@ class SmartFind:
         self.opt_find_iname = False
 
     def loadConfig( self ):
-        self.config = configPathFactory( 'sfind.json', 'sfind.barrys-emacs.org', 'sfind' )
+        self.config = configPathFactory( 'smart-find.json', 'smart-find.barrys-emacs.org', 'smart-find' )
         config_file = self.config.readFilePath()
         if config_file is None:
             json_config = default_config_json
@@ -323,9 +323,9 @@ class ConfigPath(object):
 
 class MacOsConfigPath(ConfigPath):
     # vender is a FQDN for the website of the vender for this app
-    # example: sfind.barrys-emacs.org
+    # example: smart-find.barrys-emacs.org
     # name is the apps config filename
-    # example: sfind.json
+    # example: smart-find.json
     def __init__( self, name, vender ):
         super(MacOsConfigPath, self).__init__()
         self.name = name
