@@ -32,7 +32,7 @@ import json
               47   for white (or gray) background
 '''
 
-def usage( ct ):
+def usage( ct, config_filename ):
     print( ct('''Usage: colour_filter <options> [<>em pattern<> <>em colour<>]*
 
 Read lines from stdin and print them colour based on the <>em pattern<> <>em colour<> pairs.
@@ -40,19 +40,24 @@ Read lines from stdin and print them colour based on the <>em pattern<> <>em col
 The <>em pattern<> <>em colour<> pairs can be supplied on the command line or taken from a
 pre-defined scheme.
 
+Scheme definitions are stored in %s.
 
 Options:
-    --scheme=<>em scheme<> - filter using filter scheme <>em scheme<>
-    --define-scheme=<>em scheme<> - define a filter scheme from the <>em pattern<> <>em colour<> pairs
-    --show-schemes - show all the schemes that have been defined.
-''') )
+    -s, --scheme <>em scheme<> - Filter using filter scheme <>em scheme<>
+    -a, --add                  - Add a filter <>em scheme<> with the
+                                 <>em pattern<> <>em colour<> pairs.
+                                 If the scheme always exists replace its
+                                 definition.
+    -d, --delete               - Delete the <>em scheme<>
+    -l,--list-schemes          - List all the schemes that have been
+                                 defined.
+''') % (config_filename,) )
 
 def main():
     args = iter( sys.argv )
     prog_name = next( args )
 
-    opt_define_scheme = False
-    opt_show_schemes = False
+    opt_cmd = None
     opt_scheme = None
 
     all_filters = []
@@ -62,6 +67,8 @@ def main():
 
     ct.initTerminal()
 
+    config_path = configPathFactory( 'colour-filter.json', 'colour-filter.barrys-emacs.org', 'colour-filter' )
+
     try:
         while True:
             arg = next( args, None )
@@ -69,22 +76,32 @@ def main():
                 break
 
             if arg.startswith( '-' ):
-                if '--debug' == arg:
+                if arg == '--debug':
                     cf.enableDebug()
 
                 elif arg in ('-h', '--help'):
-                    usage( ct )
+                    usage( ct, config_path.saveFilePath() )
                     return 0
 
-                elif arg.startswith('--scheme='):
-                    opt_scheme = arg[len('--scheme='):]
+                elif arg in ('-s', '--scheme'):
+                    opt_scheme = next(args)
 
-                elif arg.startswith('--define-scheme='):
-                    opt_define_scheme = True
-                    opt_scheme = arg[len('--define-scheme='):]
+                elif arg in ('-a', '--add'):
+                    opt_cmd = 'add'
 
-                elif arg == '--show-schemes':
-                    opt_show_schemes = True
+                elif arg in ('-d', '--delete'):
+                    opt_cmd = 'delete'
+
+                elif arg in ('-l', '--list-schemes'):
+                    opt_cmd = 'list'
+
+                elif arg in ('-sa', '-as'):
+                    opt_cmd = 'add'
+                    opt_scheme = next(args)
+
+                elif arg in ('-ds', '-sd'):
+                    opt_cmd = 'delete'
+                    opt_scheme = next(args)
 
                 else:
                     print( ct('<>error Error:<> Unknown options "%s"') % (arg,) )
@@ -96,7 +113,19 @@ def main():
                 all_filters.append( (pattern, colour) )
                 cf.define( pattern, colour )
 
-        config_path = configPathFactory( 'colour-filter.json', 'colour-filter.barrys-emacs.org', 'colour-filter' )
+        if opt_cmd == 'add':
+            if opt_scheme is None:
+                print( ct('<>error Error:<> --add requires a --scheme') )
+                return 1
+
+            if len(all_filters) == 0:
+                print( ct('<>error Error:<> --add atleast one pattern/colour pair') )
+                return 1
+
+        if opt_cmd == 'delete' and opt_scheme is None:
+            print( ct('<>error Error:<> --delete requires a --scheme') )
+            return 1
+
         config = {}
 
         # load the config
@@ -105,7 +134,7 @@ def main():
             with open( config_file, 'r' ) as f:
                 config = json.load( f )
 
-        if opt_show_schemes:
+        if opt_cmd == 'list':
             if len(config) == 0:
                 print( 'No schemes are defined' )
                 return 0
@@ -117,14 +146,25 @@ def main():
 
             return 0
 
-        if opt_define_scheme:
+        if opt_cmd == 'add':
             config[opt_scheme] = all_filters
 
             config_file = config_path.saveFilePath()
             with open( config_file, 'w' ) as f:
                 json.dump( config, f )
 
-            print( ct('<>info Added scheme %s with %d definitions<>') % (opt_scheme, len(config[opt_scheme])) )
+            print( ct('Added scheme <>em %s<> with %d definitions') % (opt_scheme, len(config[opt_scheme])) )
+            return 0
+
+        if opt_cmd == 'delete':
+            if opt_scheme in config:
+                del config[opt_scheme]
+
+            config_file = config_path.saveFilePath()
+            with open( config_file, 'w' ) as f:
+                json.dump( config, f )
+
+            print( ct('Deleted scheme <>em %s<>') % (opt_scheme,) )
             return 0
 
         if opt_scheme is not None:

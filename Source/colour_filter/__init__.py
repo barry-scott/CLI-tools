@@ -73,14 +73,22 @@ class ColourFilter:
         self.opt_debug = enable
 
     def define( self, pattern, colour ):
-        pattern = re.compile( pattern )
+        try:
+            pattern = re.compile( pattern )
+
+        except re.error as e:
+            raise ColourFilterError( 'In regex %r - %s' % (pattern, str(e)) )
 
         # TBD validate colour
         # allow : instead of ';' for command ease
         all_colour_parts = colour.replace( ':', ';' ).split(';')
 
         # replace all the colour names with with the escape codes
-        all_colour_parts = [colour_names.get(colour, '0') for colour in all_colour_parts]
+        try:
+            all_colour_parts = [colour_names[colour] for colour in all_colour_parts]
+
+        except KeyError as e:
+            raise ColourFilterError( 'Unknown colour %s' % (str(e),) )
 
         self.all_patterns.append( (pattern, ';'.join(all_colour_parts)) )
 
