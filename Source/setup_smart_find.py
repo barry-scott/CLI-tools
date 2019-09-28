@@ -76,6 +76,7 @@ setuptools.setup(
     keywords='development',
 
     packages=['smart_find'],
+    install_requires=['config_path'],
     entry_points = {
         'console_scripts': ['smart-find=smart_find.__main__:main'],
         }
