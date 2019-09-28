@@ -76,7 +76,7 @@ class ColourText
 - `__init__( marker='<>' )`
 
     The `marker` is the string used to markup the colour sections
-    which defaults to tilda (`<>`).
+    which defaults to `<>`.
 
 - `initTerminal()`
 

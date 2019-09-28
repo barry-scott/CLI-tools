@@ -1,32 +1,9 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-VERSION = '1.0.2'
+VERSION = '1.0.3'
 
 import sys
-
-'''
-               0   to restore default color
-               1   for brighter colors
-               4   for underlined text
-               5   for flashing text
-              30   for black foreground
-              31   for red foreground
-              32   for green foreground
-              33   for yellow (or brown) foreground
-              34   for blue foreground
-              35   for purple foreground
-              36   for cyan foreground
-              37   for white (or gray) foreground
-              40   for black background
-              41   for red background
-              42   for green background
-              43   for yellow (or brown) background
-              44   for blue background
-              45   for purple background
-              46   for cyan background
-              47   for white (or gray) background
-'''
 
 colour_names = {
     'bold':         '1',
@@ -68,7 +45,7 @@ class ColourText:
         self.marker = marker
         self.named_colours = colour_names.copy()
 
-        # define 
+        # define useful semantic names
         self.define( 'info', 'green' )
         self.define( 'error', 'red' )
         self.define( 'em', 'yellow' )   # Emphasized
@@ -152,14 +129,14 @@ def main( argv ):
     ct.define( 'E', 'error' )
     ct.initTerminal()
 
-    print( ct( 'This is ~info INFO~ and this is ~error ERROR~ text' ) )
-    print( ct( 'This is ~I info~ and this is ~E error~ text' ) )
+    print( ct( 'This is <>info INFO<> and this is <>error ERROR<> text' ) )
+    print( ct( 'This is <>I info<> and this is <>E error<> text' ) )
 
     ct = ColourText( '‡' )
     print( ct( 'Hello ‡yellow World‡ use "‡‡" as the marker.' ) )
 
 
-    ct = ColourText( '*' )
+    ct = ColourText('*')
     print( ct( 'Hello *magenta World* use "**" as the marker.' ) )
     return 0
 
