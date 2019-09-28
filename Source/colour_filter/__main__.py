@@ -7,33 +7,10 @@ import os
 import colour_filter
 import colour_text
 import json
+from config_path import ConfigPath
 
-
-'''
-               0   to restore default color
-               1   for brighter colors
-               4   for underlined text
-               5   for flashing text
-              30   for black foreground
-              31   for red foreground
-              32   for green foreground
-              33   for yellow (or brown) foreground
-              34   for blue foreground
-              35   for purple foreground
-              36   for cyan foreground
-              37   for white (or gray) foreground
-              40   for black background
-              41   for red background
-              42   for green background
-              43   for yellow (or brown) background
-              44   for blue background
-              45   for purple background
-              46   for cyan background
-              47   for white (or gray) background
-'''
-
-def usage( ct, config_filename ):
-    print( ct('''Usage: colour_filter <options> [<>em pattern<> <>em colour<>]*
+def usage( ct, cfg_filename ):
+    print( ct('''Usage: colour-filter <options> [<>em pattern<> <>em colour<>]*
 
 Read lines from stdin and print them colour based on the <>em pattern<> <>em colour<> pairs.
 
@@ -51,7 +28,7 @@ Options:
     -d, --delete               - Delete the <>em scheme<>
     -l,--list-schemes          - List all the schemes that have been
                                  defined.
-''') % (config_filename,) )
+''') % (cfg_filename,) )
 
 def main():
     args = iter( sys.argv )
@@ -67,7 +44,7 @@ def main():
 
     ct.initTerminal()
 
-    config_path = configPathFactory( 'colour-filter.json', 'colour-filter.barrys-emacs.org', 'colour-filter' )
+    cfg_path = ConfigPath( 'colour-filter', 'barrys-emacs.org', '.json' )
 
     try:
         while True:
@@ -80,7 +57,7 @@ def main():
                     cf.enableDebug()
 
                 elif arg in ('-h', '--help'):
-                    usage( ct, config_path.saveFilePath() )
+                    usage( ct, cfg_path.saveFilePath() )
                     return 0
 
                 elif arg in ('-s', '--scheme'):
@@ -129,7 +106,7 @@ def main():
         config = {}
 
         # load the config
-        config_file = config_path.readFilePath()
+        config_file = cfg_path.readFilePath()
         if config_file is not None:
             with open( config_file, 'r' ) as f:
                 config = json.load( f )
@@ -142,14 +119,14 @@ def main():
             for scheme in config:
                 print( ct('Scheme <>info %s<>') % (scheme,) )
                 for pattern, colour in config[scheme]:
-                    print( ct('    %%s: <>%s %%s<>' % (colour,)) % (pattern, colour) )
+                    print( ct('    %%r - <>%s %%s<>' % (colour,)) % (pattern, colour) )
 
             return 0
 
         if opt_cmd == 'add':
             config[opt_scheme] = all_filters
 
-            config_file = config_path.saveFilePath()
+            config_file = cfg_path.saveFilePath()
             with open( config_file, 'w' ) as f:
                 json.dump( config, f )
 
@@ -160,12 +137,16 @@ def main():
             if opt_scheme in config:
                 del config[opt_scheme]
 
-            config_file = config_path.saveFilePath()
+            config_file = cfg_path.saveFilePath()
             with open( config_file, 'w' ) as f:
                 json.dump( config, f )
 
             print( ct('Deleted scheme <>em %s<>') % (opt_scheme,) )
             return 0
+
+        if opt_scheme is None and len(config) >= 1:
+            # default to the first scheme
+            opt_scheme = sorted( config.keys() )[0]
 
         if opt_scheme is not None:
             if opt_scheme not in config:
@@ -188,149 +169,6 @@ def main():
 
     except KeyboardInterrupt:
         return 0
-
-def configPathFactory( name, vender, appname ):
-    if sys.platform == 'darwin':
-        # assume darwin mean macOS
-        return MacOsConfigPath( name, vender )
-
-    else:
-        # assume all else are XDG compatable
-        return XdgConfigPath( name, appname )
-
-
-class ConfigPath(object):
-    def __init__( self ):
-        pass
-
-    #
-    #   to use a single config files use
-    #   saveFilePath and readFilePath
-    #
-    def saveFilePath( self, mkdir=False ):
-        raise NotImplementedError('saveFilePath')
-
-    def readFilePath( self ):
-        raise NotImplementedError('readFilePath')
-
-    #
-    #   to use a folder of config files use
-    #   saveFolderPath and readFolderPath
-    #
-    def saveFolderPath( self, mkdir=False ):
-        raise NotImplementedError('saveFolderPath')
-
-    def readFolderPath( self ):
-        raise NotImplementedError('readFolderPath')
-
-class MacOsConfigPath(ConfigPath):
-    # vender is a FQDN for the website of the vender for this app
-    # example: sfind.barrys-emacs.org
-    # name is the apps config filename
-    # example: sfind.json
-    def __init__( self, name, vender ):
-        super(MacOsConfigPath, self).__init__()
-        self.name = name
-        self.vender = vender
-
-    def saveFolderPath( self, mkdir=False ):
-        return self.configFolderPath( mkdir )
-
-    def readFolderPath( self ):
-        return self.configFolderPath()
-
-    def saveFilePath( self, mkdir=False ):
-        return self.configFilePath( mkdir )
-
-    def readFilePath( self ):
-        config_path = self.configFilePath( False )
-        if os.path.exists( config_path ):
-            return config_path
-
-        return None
-
-    def configFolderPath( self, mkdir ):
-        # any folder that do not exist will be created
-
-        # change foo.org into org.foo
-        reversed_vender = '.'.join( reversed( self.vender.split('.') ) )
-
-        config_folder = os.path.join( self.getConfigFolder(), reversed_vender )
-
-        if mkdir and not os.path.exists( config_folder ):
-                os.makedirs( config_folder )
-
-        return config_folder
-
-    def configFilePath( self, mkdir ):
-        # return the path to save the config data into
-        config_path = os.path.join( self.getConfigFolder(), self.name )
-        return config_path
-
-    def getConfigFolder( self ):
-        return os.path.join( os.environ['HOME'], 'Library/Preferences' )
-
-
-class XdgConfigPath(ConfigPath):
-    # if appname is given put the config in a folder of that name
-    # name is the name of the config file
-    def __init__( self, name, appname ):
-        super(XdgConfigPath, self).__init__()
-        self.name = name
-        self.appname = appname
-
-    def saveFolderPath( self, mkdir=False ):
-        config_home = self.getConfigHome()
-        config_folder = os.path.join( config_home, self.appname )
-
-        if mkdir and not os.path.exists( config_folder ):
-            os.makedirs( config_folder )
-
-        return config_folder
-
-    def readFolderPath( self, mkdir ):
-        # return the path to read the folder that store config files.
-        # any folder that do not exist will be created
-        config_home = self.getConfigHome()
-        config_folder = os.path.join( config_home, self.appname )
-
-        if mkdir and not os.path.exists( config_folder ):
-            os.makedirs( config_folder )
-
-        return config_folder
-
-    def saveFilePath( self, mkdir=False ):
-        # return the path to save the config data into
-        # any folder that do not exist will be created
-        config_home = self.getConfigHome()
-        config_path = os.path.join( config_home, self.name )
-        if mkdir and not os.path.exists( config_home ):
-            os.makedirs( config_home )
-
-        return config_path
-
-    def readFilePath( self ):
-        # look for the config file in the config home then the config dirs
-        # return the None is not found otherwise the config path.
-        for config_dir in [self.getConfigHome()] + self.getConfigDirs():
-            config_path = os.path.join( config_dir, self.name )
-            if os.path.exists( config_path ):
-                return config_path
-
-        return None
-
-    def getConfigHome( self ):
-        return self.getEnvVar( 'XDG_CONFIG_HOME', os.path.join( os.environ['HOME'], '.config' ) )
-
-    def getConfigDirs( self ):
-        return self.getEnvVar( 'XDG_CONFIG_DIRS', '/etc/xdg' ).split(':')
-
-    def getEnvVar( self, name, default ):
-        # XDG says if missing or empty use the default
-        value = os.environ.get( name, '' )
-        if value != '':
-            return value
-        return default
 
 if __name__ == '__main__':
     sys.exit( main() )

@@ -1,10 +1,9 @@
 from __future__ import print_function
 
 import sys
-import os
 import re
 
-VERSION = '1.0.2'
+VERSION = '1.1.0'
 
 colour_names = {
     'bold':         '1',

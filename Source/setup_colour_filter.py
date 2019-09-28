@@ -76,7 +76,7 @@ setuptools.setup(
     keywords='development',
 
     packages=['colour_filter'],
-    install_requires="colour_text",
+    install_requires=['colour_text', 'config_path'],
     entry_points = {
         'console_scripts': ['colour-filter=colour_filter.__main__:main'],
         }
