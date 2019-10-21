@@ -164,7 +164,7 @@ def main():
         return 1
 
     except colour_filter.ColourFilterError as e:
-        print( ct('<>error Error:<> %s') % (e,) )
+        print( ct('<>error Error: %s<>') % (e,) )
         return 1
 
     except KeyboardInterrupt:

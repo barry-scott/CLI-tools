@@ -118,11 +118,11 @@ def main( argv=None ):
         return 0
 
     except colour_text.ColourTextError as e:
-        print( msg_ct( '<>error Error:<> %s') % e )
+        print( msg_ct( '<>error Error: %s<>') % (e,) )
         return 1
 
     except TypeError as e:
-        print( msg_ct( '<>error Error:<> %s') % e )
+        print( msg_ct( '<>error Error: %s<>') % (e,) )
         return 2
 
 if __name__ == '__main__':
