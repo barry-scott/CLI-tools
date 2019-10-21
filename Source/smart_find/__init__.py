@@ -8,7 +8,7 @@ import subprocess
 import json
 from config_path import ConfigPath
 
-VERSION = '1.0.3'
+VERSION = '1.0.4'
 
 default_config_json = u'''{
     "folders_to_prune": [".svn", ".git", ".hg"],
@@ -245,7 +245,7 @@ class SmartFind:
                     line = line.decode( 'utf-8' )
 
                     # print( 'line: %r' % (line,) )
-                    if platform.mac_ver[0] != '':
+                    if platform.mac_ver()[0] != '':
                         # mac grep is not as configurable as gnu grep
                         parts = line.split( ':', 2 )
 
