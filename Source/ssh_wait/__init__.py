@@ -23,7 +23,7 @@ def ssh_wait( host, service='ssh', wait=True, wait_limit=600, log_fn=print ):
     if log_fn is not None: log_fn( 'Connecting to %s:%s ...' % (host, service) )
     while time.time() < wait_limit:
         try:
-            s = socket.create_connection( (host, service), 0.1 )
+            s = socket.create_connection( (host, port), 0.1 )
             if log_fn is not None: log_fn( 'Connected to %s:%s' % (host, service) )
             return 0
 
