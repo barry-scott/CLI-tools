@@ -137,8 +137,8 @@ class UpdateFedora:
                             description='always reboot host even if no packages where updated' )
         self.opt_install_package = Option( '--install-package', None, value_type=str, value_name='<package>',
                             description='install <package> only' )
-        self.opt_list_groups = Option( '--list-groups', False,
-                            description='list all groups defined in the JSON config' )
+        self.opt_list_config = Option( '--list-config', False,
+                            description='list the configuration from the JSON config file' )
 
         self.ct = ColourText()
         self.ct.initTerminal()
@@ -182,7 +182,7 @@ class UpdateFedora:
             printOptionsHelp( self )
             return 0
 
-        if self.opt_list_groups:
+        if self.opt_list_config:
             fmt = '%-16s  %s'
             print( fmt % ('Group', 'Hosts') )
             print( fmt % ('-----', '-----') )
@@ -190,6 +190,8 @@ class UpdateFedora:
             for group in self.all_groups:
                 print( fmt % (group, ', '.join( self.all_groups[ group ]) ) )
 
+            print()
+            print( 'Log directory: %s' % (self.logdir,) )
             return 0
 
         if len(positional_args) == 0:
@@ -273,7 +275,7 @@ For help:
                 return defaults[name]
 
         self.all_groups = getConfigSetting( 'group', user, defaults )
-        self.logdir = Path( getConfigSetting( 'logdir', user, defaults ) )
+        self.logdir = Path( getConfigSetting( 'logdir', user, defaults ) ).expanduser()
 
         return True
 
