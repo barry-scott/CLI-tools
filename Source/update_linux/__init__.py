@@ -248,8 +248,8 @@ For help:
         if config_file is None:
             json_config = default_json_config
             self.debug( 'Using default builtin config' )
-            self.info( '', 'Creating default config in %s' )
             config_file = self.config.saveFilePath( True )
+            self.info( '', 'Creating default config in %s' % (config_file,) )
             with open( config_file, 'w' ) as f:
                 f.write( json_config )
 
