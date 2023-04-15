@@ -8,7 +8,7 @@ import tempfile
 import json
 from config_path import ConfigPath
 
-VERSION = '2.1.0'
+VERSION = '2.1.1'
 
 default_json_config_template = u'''{
     "group":
@@ -204,7 +204,7 @@ class UpdateFedora:
                     if host not in all_to_exclude:
                         self.all_hosts.append( host )
             else:
-                if host not in all_to_exclude:
+                if group_or_host not in all_to_exclude:
                     self.all_hosts.append( group_or_host )
 
         if len(self.all_hosts) == 0:
