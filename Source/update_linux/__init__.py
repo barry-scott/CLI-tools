@@ -169,15 +169,20 @@ class UpdateFedora:
 
         if self.opt_help:
             print(
-'''Usage: %s <options> <group>|<host>...
+'''Usage: %(appname)s <options> <group>|<host>...
+
+    %(appname)s version %(version)s
+
     group - read from the JSON config file:
-            %s
+            %(config_file)s
 
         each group is a list of hosts to be updated
 
     host - host to be updated
 
-    options:''' % (appname.name, self.config.readFilePath()))
+    options:''' % {'appname': appname.name
+                  ,'version': VERSION
+                  ,'config_file': self.config.readFilePath()} )
 
             printOptionsHelp( self )
             return 0
