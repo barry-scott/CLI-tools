@@ -8,7 +8,7 @@ import tempfile
 import json
 from config_path import ConfigPath
 
-VERSION = '2.0.0'
+VERSION = '2.1.0'
 
 default_json_config_template = u'''{
     "group":
@@ -194,7 +194,20 @@ class UpdateFedora:
             print( 'Log directory: %s' % (self.logdir,) )
             return 0
 
-        if len(positional_args) == 0:
+        all_to_exclude = []
+        if self.opt_exclude:
+            all_to_exclude = self.all_groups.get( self.opt_exclude(), self.opt_exclude() )
+
+        for group_or_host in positional_args:
+            if group_or_host in self.all_groups:
+                for host in self.all_groups[ group_or_host ]:
+                    if host not in all_to_exclude:
+                        self.all_hosts.append( host )
+            else:
+                if host not in all_to_exclude:
+                    self.all_hosts.append( group_or_host )
+
+        if len(self.all_hosts) == 0:
             self.error( '', 'No hosts to update' )
             print('''
 For help:
@@ -202,22 +215,16 @@ For help:
 ''' % (appname.name,))
             return 1
 
-        this_host = socket.gethostname().split('.')[0]
-
         self.summary_log_name = self.logdir / ('update-summary-%s.log' % (self.ts,))
 
         with open( self.summary_log_name, 'a' ) as self.summary_log:
             t = datetime.datetime.now()
             self.header( 'Update summary %s' % (t.strftime( '%Y-%m-%d %H:%M:%S' ),) )
 
-            for group_or_host in positional_args:
-                if group_or_host in self.all_groups:
-                    for host in self.all_groups[ group_or_host ]:
-                        self.all_hosts.append( host )
-                else:
-                    self.all_hosts.append( group_or_host )
-
             for host in self.all_hosts:
+                if host in all_to_exclude:
+                    continue
+
                 self.flushDns()
                 if self.opt_check:
                     self.check( host )
@@ -225,12 +232,12 @@ For help:
                 elif self.opt_install_package() is not None:
                     self.installPackage( host, self.opt_install_package )
 
-                elif self.opt_system_upgrade:
-                    self.systemUpgrade( host, self.opt_system_upgrade )
-
                 else:
-                    if host == this_host:
+                    if self.isThisHost( host ):
                         self.warn( host, 'Refusing to update this host' )
+
+                    elif self.opt_system_upgrade:
+                        self.systemUpgrade( host, self.opt_system_upgrade )
 
                     else:
                         self.update( host )
@@ -240,6 +247,23 @@ For help:
             print( line )
 
         return 0
+
+    def isThisHost( self, other_host ):
+        this_host = socket.gethostname()
+        this_info = socket.getaddrinfo( this_host, 'ssh', proto=socket.IPPROTO_TCP )
+        this_addrs = set(info[4][0] for info in this_info) | set(['::1', '127.0.0.1'])
+
+        try:
+            other_info = socket.getaddrinfo( other_host, 'ssh', proto=socket.IPPROTO_TCP )
+        except socket.gaierror as e:
+            self.warn( other_host, str(e) )
+            # return true to prevent update
+            return True
+
+        other_addrs = set(info[4][0] for info in other_info)
+
+        # share any address in common?
+        return len(this_addrs & other_addrs) > 0
 
     def loadConfig( self ):
         self.config = ConfigPath( 'update-linux', 'barrys-emacs.org', '.json' )

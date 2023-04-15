@@ -10,6 +10,8 @@ If running update-linux on a macOS system it is necessary to flush DNS so that f
 
 This is done with the command `sudo killall -HUP mDNSResponder`.
 
+update-linux will refuse to update the host it is running on.
+
 ## update-linux update process
 
 ```
