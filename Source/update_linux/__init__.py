@@ -6,7 +6,7 @@ import socket
 import platform
 import tempfile
 import json
-from config_path import ConfigPath
+from config_path import ConfigPath  # type: ignore
 
 VERSION = '2.1.1'
 
@@ -348,9 +348,11 @@ For help:
         cmd = ['cat', '/etc/system-release-cpe']
         rc, stdout = self.runAndLog( host, cmd, log=False )
         cpe_parts = stdout[0].strip().split( ':' )
-        if cpe_parts[3] != 'fedora':
-            self.error( host, 'Host is not running Fedora' )
-        return int( cpe_parts[4] )
+        if len(cpe_parts) >= 4 and cpe_parts[3] == 'fedora':
+            return int( cpe_parts[4] )
+
+        self.error( host, 'Host is not running Fedora - %r' % (cpe_parts,) )
+        return 0
 
     def installPackage( self, host, package ):
         rc = ssh_wait( host, wait=False, log_fn=None )
@@ -426,7 +428,7 @@ For help:
 
             self.error( host, 'reboot stdout: %r' % (stdout,) )
 
-            self.info( 'Retry reboot in 10s' )
+            self.info( host, 'Retry reboot in 10s' )
             time.sleep( 10 )
 
         # wait for system to go down
@@ -494,9 +496,11 @@ For help:
             line = p.stdout.readline()
             if line == b'':
                 break
+
             line = line.decode( 'utf-8' )
             if log:
                 print( self.ct( '<>proc %s<>: %s' % (host, line.rstrip()) ) )
+
             stdout.append( line )
 
         p.wait( 5 )
