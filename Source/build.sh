@@ -9,6 +9,7 @@ rm -rf tmp.venv
 PY=tmp.venv/bin/python
 tmp.venv/bin/python -m pip install --quiet \
     setuptools twine wheel \
+    mypy \
     colour-text config-path
 
 echo "Info: Building..."
@@ -19,6 +20,7 @@ rm -rf dist build
 function build_tool {
     ${PY} -m colour_text "<>green Info:<> building <>yellow %s<>" ${1}
     # setup tools insists on finding the README.md in the current folder
+    ${PY} -m mypy ${1}
     cp -f ${1}/README.md .
     ${PY} setup_${1}.py --quiet sdist bdist_wheel ${2}
     rm -f README.md
