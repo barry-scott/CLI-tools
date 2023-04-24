@@ -7,7 +7,7 @@ import os
 import colour_filter
 import colour_text
 import json
-from config_path import ConfigPath
+from config_path import ConfigPath  # type: ignore
 
 def usage( ct, cfg_filename ):
     print( ct('''Usage: colour-filter <options> [<>em pattern<> <>em colour<>]*

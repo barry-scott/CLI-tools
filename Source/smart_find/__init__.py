@@ -6,7 +6,7 @@ import platform
 import os
 import subprocess
 import json
-from config_path import ConfigPath
+from config_path import ConfigPath  # type: ignore
 
 VERSION = '1.0.4'
 
