@@ -8,7 +8,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '2.1.1'
+VERSION = '2.1.2'
 
 default_json_config_template = u'''{
     "group":
