@@ -1,6 +1,12 @@
 # update-linux command
 
-Command to automate the routine updating of packages and system upgrading for Fedora systems.
+Command to automate the routine updating of packages and system upgrading for Unix systems.
+
+Supports Fedora like and Debian Like OS.
+
+Fedora like includes Fedora, RHEL, Centos, Rocky etc that use DNF.
+
+Debian like includes Dedian, Ubuntu etc that use apt.
 
 update-linux uses ssh to run commands on the hosts being worked.
 
@@ -22,7 +28,9 @@ For an update the following steps are performed:
 
 1. Update packages  - if there is nothing to update stop here
 
-    `dnf -vy update --refresh`
+    Fedora: `dnf -vy update --refresh`
+
+    Debian: `apt-get update --assume-yes` then `apt-get upgrade --assume-yes`
 
 1. Wait until all systemd jobs have finished
 
@@ -46,9 +54,11 @@ $ update-linux host --check
 
 With the `--check` options these steps are performed:
 
-1. Check is there are packages to update
+1. Check if there are packages to update
 
-    `dnf check-update --refresh`
+    Fedora: `dnf check-update --refresh`
+
+    Debian: `apt-get update --assume-yes` then `apt-get upgrade --assume-no`
 
 1. Report on state of any failed services
 
@@ -57,12 +67,12 @@ With the `--check` options these steps are performed:
 ## update-linux system-upgrade process
 
 ```
-$ update-linux --system-upgrade=37 host
+$ update-linux --system-upgrade=38 host
 ```
 
 For a system-upgrade update-linux will update one release at a time.
 
-This means that a host running Fedora 35 that is being upgraded to Fedora 37 will first be upgraded to Fedora 36.
+This means that a host running Fedora 36 that is being upgraded to Fedora 38 will first be upgraded to Fedora 37.
 
 This is done as it is the safer then attempting skip over releases that can have required side-effects.
 
@@ -167,10 +177,10 @@ Install updates:
 $ update-linux host1 host2
 ```
 
-Apply a system upgrade to Fedota 37:
+Apply a system upgrade to Fedora 38:
 
 ```
-$ update-linux --system-upgrade=37 host3
+$ update-linux --system-upgrade=38 host3
 ```
 
 ## update-linux configuration
@@ -190,8 +200,7 @@ Example configuration:
             "all": [
                 "router",
                 "player",
-                "armf36",
-                "armf37"
+                "vm"
                 ],
             "vm": [
                 "armf36",

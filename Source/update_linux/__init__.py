@@ -8,7 +8,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '2.2.0'
+VERSION = '2.3.0'
 
 default_json_config_template = u'''{
     "group":
@@ -16,7 +16,6 @@ default_json_config_template = u'''{
     "logdir":   "%(logdir)s"
 }
 '''
-
 
 from pathlib import Path
 
@@ -223,22 +222,37 @@ For help:
                 if host in all_to_exclude:
                     continue
 
+                os_plugin_type, os_id = self.detectOperatingSystem( host )
+                if os_plugin_type is None:
+                    if os_id is not None:
+                        self.warn( host, 'Unsupported OS type %s' % (os_id,) )
+                    continue
+
+                self.info( host, 'OS is %s. Using OS plugin %s' % (os_id, os_plugin_type) )
+
+                plugin = os_id_to_plugin[ os_plugin_type ]( self )
+
                 self.flushDns()
                 if self.opt_check:
-                    self.check( host )
+                    plugin.check( host,
+                        check_log_name=self.logdir / ('check-update-%s-%s.log' % (host, self.ts)) )
 
                 elif self.opt_install_package() is not None:
-                    self.installPackage( host, self.opt_install_package )
+                    self.installPackage( host, self.opt_install_package,
+                        update_log_name=self.logdir / ('install-%s-%s.log' % (host, self.ts)) )
 
                 else:
                     if self.isThisHost( host ):
                         self.warn( host, 'Refusing to update this host' )
 
                     elif self.opt_system_upgrade:
-                        self.systemUpgrade( host, self.opt_system_upgrade )
+                        plugin.systemUpgrade( host, self.opt_system_upgrade,
+                            upgrade_log_name=self.logdir / ('upgrade-%s-%s.log' % (host, self.ts)) )
 
                     else:
-                        self.update( host )
+                        plugin.update( host,
+                            update_log_name=self.logdir / ('update-%s-%s.log' % (host, self.ts)),
+                            status_log_name=self.logdir / ('status-%s-%s.log' % (host, self.ts)) )
 
         print( '-' * 60 )
         for line in self.all_summary_lines:
@@ -327,103 +341,37 @@ For help:
         cmd = ['sudo', 'killall', '-HUP', 'mDNSResponder']
         self.runAndLog( None, cmd, log=False )
 
-    def check( self, host ):
+    def detectOperatingSystem( self, host ):
         rc = ssh_wait( host, wait=False, log_fn=None )
         if rc != 0:
             self.warn( host, 'Is not reachable' )
-            return
+            return None, None
 
-        check_log_name = self.logdir / ('check-update-%s-%s.log' % (host, self.ts))
+        os_release = {}
 
-        self.info( host, 'Starting Check for Updates' )
-        cmd = ['dnf', 'check-update', '--refresh']
+        cmd = ['cat', '/etc/os-release']
         rc, stdout = self.runAndLog( host, cmd, log=False )
-        self.writeLines( check_log_name, stdout )
+        for line in stdout:
+            line = line.strip()
+            if line == '' or '=' not in line:
+                continue
 
-        if rc == 0:
-            self.info( host, 'Already up to date' )
+            key, value = line.split( '=', 1 )
+            if value.startswith('"') and value.endswith('"'):
+                value = value[1:-1]
+            os_release[key] = value
 
-        elif rc == 100:
-            self.warn( host, 'Updates available' )
+        os_main_id = os_release.get('ID', None)
+        os_id_set = set([os_main_id])
+        if 'ID_LIKE' in os_release:
+            for ID in os_release['ID_LIKE'].split():
+                os_id_set.add( ID )
 
-        else:
-            self.error( host, 'check-update failed' )
+        for os_id in os_id_set:
+            if os_id in os_id_to_plugin:
+                return os_id, os_main_id
 
-        self.checkServices( host, check_log_name )
-
-        release = self.releaseInfo( host )
-        self.info( host, 'Running on Fedora release %s' % (release,) )
-
-    def releaseInfo( self, host ):
-        cmd = ['cat', '/etc/system-release-cpe']
-        rc, stdout = self.runAndLog( host, cmd, log=False )
-        cpe_parts = stdout[0].strip().split( ':' )
-        if len(cpe_parts) >= 4 and cpe_parts[3] == 'fedora':
-            return int( cpe_parts[4] )
-
-        self.error( host, 'Host is not running Fedora - %r' % (cpe_parts,) )
-        return 0
-
-    def installPackage( self, host, package ):
-        rc = ssh_wait( host, wait=False, log_fn=None )
-        if rc != 0:
-            self.warn( host, 'Is not reachable' )
-            return
-
-        install_log_name = self.logdir / ('install-%s-%s.log' % (host, self.ts))
-
-        cmd = ['dnf', '-y', 'install', '--refresh', package]
-        rc, stdout = self.runAndLog( host, cmd )
-
-        self.writeLines( install_log_name, stdout )
-
-        if rc != 0:
-            self.error( host, 'Install failed' )
-            return
-
-    def update( self, host ):
-        rc = ssh_wait( host, wait=False, log_fn=None )
-        if rc != 0:
-            self.warn( host, 'Is not reachable' )
-            return
-
-        self.info( host, 'Starting Update' )
-
-        update_log_name = self.logdir / ('update-%s-%s.log' % (host, self.ts))
-        status_log_name = self.logdir / ('status-%s-%s.log' % (host, self.ts))
-
-        cmd = ['dnf', '-vy', 'update', '--refresh']
-        rc, stdout = self.runAndLog( host, cmd )
-
-        self.writeLines( update_log_name, stdout )
-
-        if rc != 0:
-            self.error( host, 'Update failed' )
-            return
-
-        if 'Nothing to do.\n' in stdout:
-            self.info( host, 'Already up to date' )
-            if not self.opt_force_reboot:
-                return
-
-        self.info( host, 'Check all systemd jobs finished' )
-        while True:
-            cmd = ['systemctl', 'list-jobs']
-            rc, stdout = self.runAndLog( host, cmd )
-            self.writeLines( update_log_name, stdout )
-            if rc != 0:
-                self.error( host, 'cannot list jobs' )
-                return
-
-            if 'No jobs running.\n' in stdout:
-                self.info( host, 'All systemd jobs finished' )
-                break
-
-            time.sleep( 10 )
-
-        self.info( host, 'Rebooting' )
-        if self.reboot( host, ['reboot'] ):
-            self.checkServices( host, status_log_name )
+        return None, os_main_id
 
     def reboot( self, host, cmd, wait_limit=600 ):
         while True:
@@ -457,7 +405,7 @@ For help:
         if log_name is not None:
             self.writeLines( log_name, stdout )
 
-        if '0 loaded units listed.\n' not in stdout:
+        if len(stdout) < 1 and not stdout[0].startswith( '0 loaded units listed.' ):
             for line in stdout:
                 print( self.ct( '<>proc %s<>: %s' % (host, line.rstrip()) ) )
 
@@ -467,33 +415,21 @@ For help:
         self.info( host, 'All services running' )
         return True
 
-    def systemUpgrade( self, host, target_release ):
-        current_release = self.releaseInfo( host )
-        if current_release == target_release:
-            self.info( host, 'Already running Fedora release %d' % (target_release,) )
-            return
+    def waitAllSystemdJobsFinished( self, host, log_name=None ):
+        self.info( host, 'Check all systemd jobs finished' )
+        while True:
+            cmd = ['systemctl', 'list-jobs']
+            rc, stdout = self.runAndLog( host, cmd )
+            self.writeLines( log_name, stdout )
+            if rc != 0:
+                self.error( host, 'cannot list jobs' )
+                return
 
-        upgrade_log_name = self.logdir / ('update-%s-%s.log' % (host, self.ts))
+            if 'No jobs running.\n' in stdout:
+                self.info( host, 'All systemd jobs finished' )
+                break
 
-        self.info( host, 'Currently Fedora release %d' % (current_release,) )
-
-        # only update by one release at a time
-        next_release = current_release + 1
-
-        cmd = ['dnf', 'system-upgrade', 'download', '--releasever=%d' % (next_release,), '--assumeyes']
-        rc, stdout = self.runAndLog( host, cmd )
-        self.writeLines( upgrade_log_name, stdout )
-
-        if rc != 0:
-            self.error( host, 'Failure to download release %d' % (next_release,) )
-            return
-
-        self.info( host, 'Rebooting to install system-upgrade' )
-        # upgrades of lots of packages can be slow - wait for 45 minutes
-        if self.reboot( host, ['dnf', 'system-upgrade', 'reboot'], wait_limit=45*60 ):
-            self.checkServices( host, upgrade_log_name )
-
-        self.info( host, 'Now running Fedora release %d' % (self.releaseInfo( host ),) )
+            time.sleep( 10 )
 
     def runAndLog( self, host, cmd, log=True ):
         if host is not None:
@@ -548,3 +484,211 @@ For help:
         if self.summary_log is not None:
             print( log_line, file=self.summary_log, flush=True )
             self.all_summary_lines.append( log_line )
+
+class UpdatePluginFedora:
+    def __init__( self, app ):
+        self.app = app
+
+    def check( self, host, check_log_name ):
+        rc = ssh_wait( host, wait=False, log_fn=None )
+        if rc != 0:
+            self.app.warn( host, 'Is not reachable' )
+            return
+
+        self.app.info( host, 'Starting Check for Updates' )
+        cmd = ['dnf', 'check-update', '--refresh']
+        rc, stdout = self.app.runAndLog( host, cmd, log=False )
+        self.app.writeLines( check_log_name, stdout )
+
+        if rc == 0:
+            self.app.info( host, 'Already up to date' )
+
+        elif rc == 100:
+            self.app.warn( host, 'Updates available' )
+
+        else:
+            self.app.error( host, 'check-update failed' )
+
+        self.app.checkServices( host, check_log_name )
+
+        release = self.releaseInfo( host )
+        self.app.info( host, 'Running on release %s' % (release,) )
+
+    def installPackage( self, host, package, install_log_name ):
+        rc = ssh_wait( host, wait=False, log_fn=None )
+        if rc != 0:
+            self.app.warn( host, 'Is not reachable' )
+            return
+
+        cmd = ['dnf', '-y', 'install', '--refresh', package]
+        rc, stdout = self.app.runAndLog( host, cmd )
+
+        self.app.writeLines( install_log_name, stdout )
+
+        if rc != 0:
+            self.app.error( host, 'Install failed' )
+            return
+
+    def update( self, host, update_log_name, status_log_name ):
+        rc = ssh_wait( host, wait=False, log_fn=None )
+        if rc != 0:
+            self.app.warn( host, 'Is not reachable' )
+            return
+
+        self.app.info( host, 'Starting Update' )
+
+        cmd = ['dnf', '-vy', 'update', '--refresh']
+        rc, stdout = self.app.runAndLog( host, cmd )
+
+        self.app.writeLines( update_log_name, stdout )
+
+        if rc != 0:
+            self.app.error( host, 'Update failed' )
+            return
+
+        if 'Nothing to do.\n' in stdout:
+            self.app.info( host, 'Already up to date' )
+            if not self.app.opt_force_reboot:
+                return
+
+        self.app.waitAllSystemdJobsFinished( host, update_log_name )
+
+        self.app.info( host, 'Rebooting' )
+        if self.app.reboot( host, ['reboot'] ):
+            self.app.checkServices( host, status_log_name )
+
+    def systemUpgrade( self, host, target_release, upgrade_log_name ):
+        current_release = self.app.releaseInfo( host )
+        if current_release == target_release:
+            self.app.info( host, 'Already running release %d' % (target_release,) )
+            return
+
+        self.app.info( host, 'Currently release %d' % (current_release,) )
+
+        # only update by one release at a time
+        next_release = current_release + 1
+
+        cmd = ['dnf', 'system-upgrade', 'download', '--releasever=%d' % (next_release,), '--assumeyes']
+        rc, stdout = self.app.runAndLog( host, cmd )
+        self.app.writeLines( upgrade_log_name, stdout )
+
+        if rc != 0:
+            self.app.error( host, 'Failure to download release %d' % (next_release,) )
+            return
+
+        self.app.info( host, 'Rebooting to install system-upgrade' )
+        # upgrades of lots of packages can be slow - wait for 45 minutes
+        if self.app.reboot( host, ['dnf', 'system-upgrade', 'reboot'], wait_limit=45*60 ):
+            self.app.checkServices( host, upgrade_log_name )
+
+        self.app.info( host, 'Now running release %d' % (self.app.releaseInfo( host ),) )
+
+    def releaseInfo( self, host ):
+        cmd = ['cat', '/etc/system-release-cpe']
+        rc, stdout = self.app.runAndLog( host, cmd, log=False )
+        cpe_parts = stdout[0].strip().split( ':' )
+        if len(cpe_parts) >= 4:
+            return int( cpe_parts[4] )
+
+        self.app.error( host, 'Not enough fields in /etc/system-release-cpe - %r' % (cpe_parts,) )
+        return 0
+
+
+class UpdatePluginDebian:
+    def __init__( self, app ):
+        self.app = app
+
+    def check( self, host, check_log_name ):
+        rc = ssh_wait( host, wait=False, log_fn=None )
+        if rc != 0:
+            self.app.warn( host, 'Is not reachable' )
+            return
+
+        self.app.info( host, 'Starting Check for Updates' )
+        cmd = ['apt-get', 'update', '--assume-yes']
+        rc, stdout = self.app.runAndLog( host, cmd, log=False )
+        self.app.writeLines( check_log_name, stdout )
+        if rc != 0:
+            self.app.error( host, 'apt-get update failed' )
+            return
+
+        cmd = ['apt-get', 'upgrade', '--assume-no']
+        rc, stdout = self.app.runAndLog( host, cmd, log=False )
+        self.app.debug( 'check_log_name %s' % (check_log_name,) )
+        self.app.writeLines( check_log_name, stdout )
+
+        for line in stdout:
+            words = line.split()
+            self.app.debug( 'apt-get-upgrade: %r' % (words,) )
+            if len(words) >= 2 and words[1] == 'upgraded,':
+                if words[0] == '0':
+                    self.app.info( host, 'Already up to date' )
+
+                else:
+                    self.app.warn( host, 'Updates available: %s' % (line,) )
+
+                self.app.checkServices( host, check_log_name )
+                return
+
+        self.app.error( host, 'apt-get upgrade failed' )
+
+    def installPackage( self, host, package, install_log_name ):
+        pass
+
+    def update( self, host, update_log_name, status_log_name ):
+        rc = ssh_wait( host, wait=False, log_fn=None )
+        if rc != 0:
+            self.app.warn( host, 'Is not reachable' )
+            return
+
+        self.app.info( host, 'Starting Update' )
+        cmd = ['apt-get', 'update', '--assume-yes']
+        rc, stdout = self.app.runAndLog( host, cmd, log=False )
+        self.app.writeLines( update_log_name, stdout )
+        if rc != 0:
+            self.app.error( host, 'apt-get update failed' )
+            return
+
+        cmd = ['apt-get', 'upgrade', '--assume-yes']
+        rc, stdout = self.app.runAndLog( host, cmd )
+
+        self.app.writeLines( update_log_name, stdout )
+
+        for line in stdout:
+            words = line.split()
+            self.app.debug( 'apt-get-upgrade: %r' % (words,) )
+            if len(words) >= 2 and words[1] == 'upgraded,':
+                if words[0] == '0':
+                    self.app.info( host, 'Already up to date' )
+                    if not self.app.opt_force_reboot:
+                        return
+
+                else:
+                    self.app.info( host, 'Updated: %s' % (line,) )
+                break
+
+        self.updateAptFileDatabase( host, update_log_name )
+
+        self.app.waitAllSystemdJobsFinished( host, update_log_name )
+
+        self.app.info( host, 'Rebooting' )
+        if self.app.reboot( host, ['reboot'] ):
+            self.app.checkServices( host, status_log_name )
+
+    def updateAptFileDatabase( self, host, update_log_name ):
+        cmd = ['/usr/bin/test', '-x', '/usr/bin/apt-file']
+        rc, stdout = self.app.runAndLog( host, cmd, log=False )
+        if rc == 0:
+            self.app.info( host, 'Updating apt-file database' )
+            cmd = ['/usr/bin/apt-file', 'update']
+            rc, stdout = self.app.runAndLog( host, cmd, log=True )
+            self.app.writeLines( update_log_name, stdout )
+
+    def systemUpgrade( self, host, target_release, upgrade_log_name ):
+        pass
+
+
+os_id_to_plugin = {
+    'fedora':   UpdatePluginFedora,
+    'debian':   UpdatePluginDebian,
+    }
