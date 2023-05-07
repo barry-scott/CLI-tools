@@ -8,7 +8,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '2.1.2'
+VERSION = '2.2.0'
 
 default_json_config_template = u'''{
     "group":
@@ -203,14 +203,7 @@ class UpdateFedora:
         if self.opt_exclude:
             all_to_exclude = self.all_groups.get( self.opt_exclude(), self.opt_exclude() )
 
-        for group_or_host in positional_args:
-            if group_or_host in self.all_groups:
-                for host in self.all_groups[ group_or_host ]:
-                    if host not in all_to_exclude:
-                        self.all_hosts.append( host )
-            else:
-                if group_or_host not in all_to_exclude:
-                    self.all_hosts.append( group_or_host )
+        self.all_hosts = list( self.hostIter( positional_args ) )
 
         if len(self.all_hosts) == 0:
             self.error( '', 'No hosts to update' )
@@ -252,6 +245,14 @@ For help:
             print( line )
 
         return 0
+
+    def hostIter( self, groups_or_hosts ):
+        for group_or_host in groups_or_hosts:
+            if group_or_host in self.all_groups:
+                yield from self.hostIter( self.all_groups[ group_or_host ] )
+
+            else:
+                yield group_or_host
 
     def isThisHost( self, other_host ):
         this_host = socket.gethostname()
