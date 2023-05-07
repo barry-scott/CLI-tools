@@ -246,10 +246,19 @@ For help:
 
         return 0
 
-    def hostIter( self, groups_or_hosts ):
-        for group_or_host in groups_or_hosts:
+    def hostIter( self, all_groups_or_hosts, _handled=None ):
+        if _handled is None:
+            _handled = set()
+
+        for group_or_host in all_groups_or_hosts:
+            # deal with recursive groups and duplicate host
+            # by ignoring them
+            if group_or_host in _handled:
+                continue
+
+            _handled.add( group_or_host )
             if group_or_host in self.all_groups:
-                yield from self.hostIter( self.all_groups[ group_or_host ] )
+                yield from self.hostIter( self.all_groups[ group_or_host ], _handled )
 
             else:
                 yield group_or_host
