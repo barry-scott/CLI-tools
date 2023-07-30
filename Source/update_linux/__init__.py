@@ -262,7 +262,7 @@ For help:
                             update_log_name=self.logdir / ('update-%s-%s.log' % (host or 'localhost', self.ts)),
                             status_log_name=self.logdir / ('status-%s-%s.log' % (host or 'localhost', self.ts)) )
 
-        if len(self.all_hosts) > 1:
+        if not self.opt_check:
             print( '-' * 60 )
             for line in self.all_summary_lines:
                 print( line )
