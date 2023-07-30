@@ -254,7 +254,7 @@ For help:
                         self.warn( host, 'Refusing to update this host' )
 
                     elif self.opt_system_upgrade:
-                        plugin.systemUpgrade( host, self.opt_system_upgrade,
+                        plugin.systemUpgrade( host, self.opt_system_upgrade(),
                             upgrade_log_name=self.logdir / ('upgrade-%s-%s.log' % (host or 'localhost', self.ts)) )
 
                     else:
@@ -572,10 +572,12 @@ class UpdatePluginFedora:
             self.app.checkServices( host, status_log_name )
 
     def systemUpgrade( self, host, target_release, upgrade_log_name ):
-        current_release = self.app.releaseInfo( host )
-        if current_release == target_release:
-            self.app.info( host, 'Already running release %d' % (target_release,) )
+        current_release = self.releaseInfo( host )
+        if current_release >= target_release:
+            self.app.info( host, 'Already running release %d' % (current_release,) )
             return
+
+        return
 
         self.app.info( host, 'Currently release %d' % (current_release,) )
 
@@ -595,7 +597,7 @@ class UpdatePluginFedora:
         if self.app.reboot( host, ['dnf', 'system-upgrade', 'reboot'], wait_limit=45*60 ):
             self.app.checkServices( host, upgrade_log_name )
 
-        self.app.info( host, 'Now running release %d' % (self.app.releaseInfo( host ),) )
+        self.app.info( host, 'Now running release %d' % (self.releaseInfo( host ),) )
 
     def releaseInfo( self, host ):
         cmd = ['cat', '/etc/system-release-cpe']
