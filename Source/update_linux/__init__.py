@@ -262,11 +262,12 @@ For help:
                             update_log_name=self.logdir / ('update-%s-%s.log' % (host or 'localhost', self.ts)),
                             status_log_name=self.logdir / ('status-%s-%s.log' % (host or 'localhost', self.ts)) )
 
-        print( '-' * 60 )
-        for line in self.all_summary_lines:
-            print( line )
+        if len(self.all_hosts) > 1:
+            print( '-' * 60 )
+            for line in self.all_summary_lines:
+                print( line )
 
-        return 0
+            return 0
 
     def hostIter( self, all_groups_or_hosts, _handled=None ):
         if _handled is None:
