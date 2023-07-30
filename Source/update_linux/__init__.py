@@ -476,15 +476,13 @@ For help:
             print( self.ct( '<>red Debug:<> %s' % (msg,) ), flush=True )
 
     def info( self, host, msg ):
-        if host is None:
-            host = 'localhost'
-        self._log( '<>info %(TIME)s<> <>host %(HOST)10s<> %(MSG)s', host, msg )
+        self._log( '<>info %(TIME)s<> <>host %(HOST)10s<> %(MSG)s', host or 'localhost', msg )
 
     def error( self, host, msg ):
-        self._log( '<>error %(TIME)s<> <>host %(HOST)10s<> <>error %(MSG)s<>', host, msg )
+        self._log( '<>error %(TIME)s<> <>host %(HOST)10s<> <>error %(MSG)s<>', host or 'localhost', msg )
 
     def warn( self, host, msg ):
-        self._log( '<>em %(TIME)s<> <>host %(HOST)10s<> <>em %(MSG)s<>', host, msg )
+        self._log( '<>em %(TIME)s<> <>host %(HOST)10s<> <>em %(MSG)s<>', host or 'localhost', msg )
 
     def header( self, msg ):
         self._log( '<>em %(MSG)s<>', '', msg )
