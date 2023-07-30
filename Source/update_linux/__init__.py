@@ -1,4 +1,5 @@
 import sys
+import os
 import datetime
 import subprocess
 import time
@@ -8,7 +9,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '2.3.0'
+VERSION = '2.4.0'
 
 default_json_config_template = u'''{
     "group":
@@ -138,6 +139,8 @@ class UpdateFedora:
                             description='install <package> only' )
         self.opt_list_config = Option( '--list-config', False,
                             description='list the configuration from the JSON config file' )
+        self.opt_update_self = Option( '--self', False,
+                            description='apply commands to this computer')
 
         self.ct = ColourText()
         self.ct.initTerminal()
@@ -168,7 +171,7 @@ class UpdateFedora:
 
         if self.opt_help:
             print(
-'''Usage: %(appname)s <options> <group>|<host>...
+'''Usage: %(appname)s <options> <group>|<host>|--self...
 
     %(appname)s version %(version)s
 
@@ -178,6 +181,8 @@ class UpdateFedora:
         each group is a list of hosts to be updated
 
     host - host to be updated
+
+    --self - update this computer
 
     options:''' % {'appname': appname.name
                   ,'version': VERSION
@@ -202,7 +207,10 @@ class UpdateFedora:
         if self.opt_exclude:
             all_to_exclude = self.all_groups.get( self.opt_exclude(), self.opt_exclude() )
 
-        self.all_hosts = list( self.hostIter( positional_args ) )
+        if self.opt_update_self:
+            self.all_hosts = [None]
+        else:
+            self.all_hosts = list( self.hostIter( positional_args ) )
 
         if len(self.all_hosts) == 0:
             self.error( '', 'No hosts to update' )
@@ -235,24 +243,24 @@ For help:
                 self.flushDns()
                 if self.opt_check:
                     plugin.check( host,
-                        check_log_name=self.logdir / ('check-update-%s-%s.log' % (host, self.ts)) )
+                        check_log_name=self.logdir / ('check-update-%s-%s.log' % (host or 'localhost', self.ts)) )
 
                 elif self.opt_install_package() is not None:
                     self.installPackage( host, self.opt_install_package,
-                        update_log_name=self.logdir / ('install-%s-%s.log' % (host, self.ts)) )
+                        update_log_name=self.logdir / ('install-%s-%s.log' % (host or 'localhost', self.ts)) )
 
                 else:
-                    if self.isThisHost( host ):
+                    if host is not None and self.isThisHost( host ):
                         self.warn( host, 'Refusing to update this host' )
 
                     elif self.opt_system_upgrade:
                         plugin.systemUpgrade( host, self.opt_system_upgrade,
-                            upgrade_log_name=self.logdir / ('upgrade-%s-%s.log' % (host, self.ts)) )
+                            upgrade_log_name=self.logdir / ('upgrade-%s-%s.log' % (host or 'localhost', self.ts)) )
 
                     else:
                         plugin.update( host,
-                            update_log_name=self.logdir / ('update-%s-%s.log' % (host, self.ts)),
-                            status_log_name=self.logdir / ('status-%s-%s.log' % (host, self.ts)) )
+                            update_log_name=self.logdir / ('update-%s-%s.log' % (host or 'localhost', self.ts)),
+                            status_log_name=self.logdir / ('status-%s-%s.log' % (host or 'localhost', self.ts)) )
 
         print( '-' * 60 )
         for line in self.all_summary_lines:
@@ -342,10 +350,11 @@ For help:
         self.runAndLog( None, cmd, log=False )
 
     def detectOperatingSystem( self, host ):
-        rc = ssh_wait( host, wait=False, log_fn=None )
-        if rc != 0:
-            self.warn( host, 'Is not reachable' )
-            return None, None
+        if host is not None:
+            rc = ssh_wait( host, wait=False, log_fn=None )
+            if rc != 0:
+                self.warn( host, 'Is not reachable' )
+                return None, None
 
         os_release = {}
 
@@ -407,7 +416,7 @@ For help:
 
         if len(stdout) < 1 and not stdout[0].startswith( '0 loaded units listed.' ):
             for line in stdout:
-                print( self.ct( '<>proc %s<>: %s' % (host, line.rstrip()) ) )
+                print( self.ct( '<>proc %s<>: %s' % (host or 'localhost', line.rstrip()) ) )
 
             self.error( host, 'Some services failed' )
             return False
@@ -435,6 +444,9 @@ For help:
         if host is not None:
             cmd = ['ssh', 'root@%s' % (host,)] + cmd
 
+        elif os.getuid() != 0:
+            cmd = ['sudo'] + cmd
+
         self.debug( 'runAndLog( %s )' % (' '.join( cmd ),) )
         stdout = []
         p = subprocess.Popen( cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE )
@@ -445,7 +457,7 @@ For help:
 
             line = line.decode( 'utf-8' )
             if log:
-                print( self.ct( '<>proc %s<>: %s' % (host, line.rstrip()) ) )
+                print( self.ct( '<>proc %s<>: %s' % (host or 'localhost', line.rstrip()) ) )
 
             stdout.append( line )
 
@@ -464,6 +476,8 @@ For help:
             print( self.ct( '<>red Debug:<> %s' % (msg,) ), flush=True )
 
     def info( self, host, msg ):
+        if host is None:
+            host = 'localhost'
         self._log( '<>info %(TIME)s<> <>host %(HOST)10s<> %(MSG)s', host, msg )
 
     def error( self, host, msg ):
@@ -530,10 +544,11 @@ class UpdatePluginFedora:
             return
 
     def update( self, host, update_log_name, status_log_name ):
-        rc = ssh_wait( host, wait=False, log_fn=None )
-        if rc != 0:
-            self.app.warn( host, 'Is not reachable' )
-            return
+        if host is not None:
+            rc = ssh_wait( host, wait=False, log_fn=None )
+            if rc != 0:
+                self.app.warn( host, 'Is not reachable' )
+                return
 
         self.app.info( host, 'Starting Update' )
 

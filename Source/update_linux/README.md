@@ -8,15 +8,19 @@ Fedora like includes Fedora, RHEL, Centos, Rocky etc that use DNF.
 
 Debian like includes Dedian, Ubuntu etc that use apt.
 
-update-linux uses ssh to run commands on the hosts being worked.
+update-linux uses ssh to run commands on the hosts being worked on.
 
 It assumes that it can `ssh root@<host>` without a password prompt.
+
+However when using the --self option to update localhost sudo will
+be used it not run as root. This will be prompted for the sudo password
+as necessary.
 
 If running update-linux on a macOS system it is necessary to flush DNS so that freshly booted hosts can be accessed by host-name.
 
 This is done with the command `sudo killall -HUP mDNSResponder`.
 
-update-linux will refuse to update the host it is running on.
+update-linux will refuse to update the host it is running on unless the -self options is used.
 
 ## update-linux update process
 
