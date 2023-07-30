@@ -2,6 +2,8 @@
 
 Command to automate the routine updating of packages and system upgrading for Unix systems.
 
+update-linuk can check for updates (--check), install updates (--update) and do a system upgrade (--system-upgrade).
+
 Supports Fedora like and Debian Like OS.
 
 Fedora like includes Fedora, RHEL, Centos, Rocky etc that use DNF.
@@ -12,9 +14,7 @@ update-linux uses ssh to run commands on the hosts being worked on.
 
 It assumes that it can `ssh root@<host>` without a password prompt.
 
-However when using the --self option to update localhost sudo will
-be used it not run as root. This will be prompted for the sudo password
-as necessary.
+However when using the --self option to update localhost sudo will be used it not runming as root. This will prompt for the sudo password as necessary.
 
 If running update-linux on a macOS system it is necessary to flush DNS so that freshly booted hosts can be accessed by host-name.
 
@@ -22,10 +22,12 @@ This is done with the command `sudo killall -HUP mDNSResponder`.
 
 update-linux will refuse to update the host it is running on unless the -self options is used.
 
+Normally a reboot is done at the conclusion of an update unless update-linux can determine that the reboot is not required.
+
 ## update-linux update process
 
 ```
-$ update-linux host
+$ update-linux --update host
 ```
 
 For an update the following steps are performed:
@@ -41,6 +43,10 @@ For an update the following steps are performed:
     `systemctl list-jobs`
 
     For example akmod building nvidia drivers for a new kernel
+
+1. Check if a reboot is needed.
+
+    `dnf needs-restart -r`
 
 1. Reboot the host
 
@@ -64,7 +70,7 @@ With the `--check` options these steps are performed:
 
     Debian: `apt-get update --assume-yes` then `apt-get upgrade --assume-no`
 
-1. Report on state of any failed services
+1. Report on state of any failed services. Not possible upgrading localhost with --self.
 
     `systemctl --failed`
 
@@ -100,7 +106,7 @@ For a system-upgrade these steps are used:
 
     There is a limit of 45 minutes to wait for the reboot
 
-1. Report on state of any failed services
+1. Report on state of any failed services. Not possible upgrading localhost with --self.
 
     `systemctl --failed`
 

@@ -9,7 +9,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '2.4.0'
+VERSION = '3.0.0'
 
 default_json_config_template = u'''{
     "group":
@@ -129,10 +129,12 @@ class UpdateFedora:
                             description='print debug messages' )
         self.opt_check = Option( '--check', False,
                             description='check if update is required' )
-        self.opt_exclude = Option( '--exclude', None, value_type=str, value_name='<host>',
-                            description='exclude the <host> from being updated'  )
+        self.opt_update = Option( '--update', None,
+                            description='perform update of installed packages' )
         self.opt_system_upgrade = Option( '--system-upgrade', None, value_type=int, value_name='<version>',
                             description='perform a system upgrade to version <version>' )
+        self.opt_exclude = Option( '--exclude', None, value_type=str, value_name='<host>',
+                            description='exclude the <host> from being updated'  )
         self.opt_force_reboot = Option( '--force-reboot', False,
                             description='always reboot host even if no packages where updated' )
         self.opt_install_package = Option( '--install-package', None, value_type=str, value_name='<package>',
@@ -146,6 +148,7 @@ class UpdateFedora:
         self.ct.initTerminal()
         self.ct.define( 'host', 'lightblue' )
         self.ct.define( 'proc', 'magenta' )
+        self.ct.define( 'file', 'magenta' )
 
         t = datetime.datetime.now()
         self.ts = t.strftime( '%Y-%m-%d' )
@@ -257,10 +260,14 @@ For help:
                         plugin.systemUpgrade( host, self.opt_system_upgrade(),
                             upgrade_log_name=self.logdir / ('upgrade-%s-%s.log' % (host or 'localhost', self.ts)) )
 
-                    else:
+                    elif self.opt_update:
                         plugin.update( host,
                             update_log_name=self.logdir / ('update-%s-%s.log' % (host or 'localhost', self.ts)),
                             status_log_name=self.logdir / ('status-%s-%s.log' % (host or 'localhost', self.ts)) )
+
+                    else:
+                        self.error( host, 'What action do you wish performed? --check --update or --system-upgrade' )
+                        return 1
 
         if not self.opt_check:
             print( '-' * 60 )
@@ -517,7 +524,7 @@ class UpdatePluginFedora:
             self.app.info( host, 'Already up to date' )
 
         elif rc == 100:
-            self.app.warn( host, 'Updates available' )
+            self.app.warn( host, 'Updates available. See<> <>file %s<> <>em for details' % (check_log_name,) )
 
         else:
             self.app.error( host, 'check-update failed' )
@@ -566,6 +573,12 @@ class UpdatePluginFedora:
                 return
 
         self.app.waitAllSystemdJobsFinished( host, update_log_name )
+
+        cmd = ['dnf', 'needs-restarting', '-r']
+        rc, stdout = self.app.runAndLog( host, cmd )
+        if rc == 0:
+            self.app.info( host, 'No reboot required' )
+            return
 
         self.app.info( host, 'Rebooting' )
         if self.app.reboot( host, ['reboot'] ):
