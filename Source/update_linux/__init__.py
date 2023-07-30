@@ -76,10 +76,15 @@ class Option:
     def help( self ):
         all_help = []
         if self.value_type is not None:
-            all_help.append( '%s=%s default %s' %
-                (self.name
-                ,self.value_name
-                ,{True: 'On', False: 'Off'}.get( self.default, self.default ) ))
+            if self.default is None:
+                all_help.append( '%s=%s' %
+                    (self.name
+                    ,self.value_name))
+            else:
+                all_help.append( '%s=%s (default %s)' %
+                    (self.name
+                    ,self.value_name
+                    ,{True: 'On', False: 'Off'}.get( self.default, self.default ) ))
 
         else:
             all_help.append( '%s default %s' %
@@ -129,7 +134,7 @@ class UpdateFedora:
                             description='print debug messages' )
         self.opt_check = Option( '--check', False,
                             description='check if update is required' )
-        self.opt_update = Option( '--update', None,
+        self.opt_update = Option( '--update', False,
                             description='perform update of installed packages' )
         self.opt_system_upgrade = Option( '--system-upgrade', None, value_type=int, value_name='<version>',
                             description='perform a system upgrade to version <version>' )
@@ -249,8 +254,8 @@ For help:
                         check_log_name=self.logdir / ('check-update-%s-%s.log' % (host or 'localhost', self.ts)) )
 
                 elif self.opt_install_package() is not None:
-                    self.installPackage( host, self.opt_install_package,
-                        update_log_name=self.logdir / ('install-%s-%s.log' % (host or 'localhost', self.ts)) )
+                    plugin.installPackage( host, self.opt_install_package(),
+                        install_log_name=self.logdir / ('install-%s-%s.log' % (host or 'localhost', self.ts)) )
 
                 else:
                     if host is not None and self.isThisHost( host ):
@@ -535,10 +540,11 @@ class UpdatePluginFedora:
         self.app.info( host, 'Running on release %s' % (release,) )
 
     def installPackage( self, host, package, install_log_name ):
-        rc = ssh_wait( host, wait=False, log_fn=None )
-        if rc != 0:
-            self.app.warn( host, 'Is not reachable' )
-            return
+        if host is not None:
+            rc = ssh_wait( host, wait=False, log_fn=None )
+            if rc != 0:
+                self.app.warn( host, 'Is not reachable' )
+                return
 
         cmd = ['dnf', '-y', 'install', '--refresh', package]
         rc, stdout = self.app.runAndLog( host, cmd )
