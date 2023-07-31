@@ -22,7 +22,10 @@ function build_tool {
     ${PY} -m colour_text "<>green Info:<> building <>yellow %s<>" ${1}
     # setup tools insists on finding the README.md in the current folder
     pushd ${1}
-    ${PY} -m pip install --requirement ./requirements.txt
+    if [[ -e requirements.txt ]]
+    then
+        ${PY} -m pip install --requirement ./requirements.txt
+    fi
     cd src
     echo ${PY} -m mypy ${1}
     cd ..
@@ -33,7 +36,7 @@ function build_tool {
     popd
 }
 
-if [[ "$1" = "qqq" ]]
+if [[ "$1" = "" ]]
 then
     build_tool colour_text
     build_tool colour_filter

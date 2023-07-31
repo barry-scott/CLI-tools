@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=61.0", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ssh-wait"
+authors = [
+    {name = "Barry Scott", email = "barry@barrys-emacs.org"},
+]
+description = "ssh-wait waits for the service to be available over ssh"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache 2.0"}
+keywords = [ "development" ]
+classifiers = [
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Utilities",
+    "Environment :: Console",
+    "Programming Language :: Python :: 3",
+]
+dependencies = []
+dynamic = ["version"]
+
+[tool.setuptools.dynamic]
+version = {attr = "ssh_wait.VERSION"}
+
+[project.optional-dependencies]
+
+[project.scripts]
+update-linux = "ssh_wait.__main__:main"
+
+[project.urls]
+"Homepage" = "https://github.com/barry-scott/CLI-tools"
+"Bug Tracker" = "https://github.com/barry-scott/CLI-tools/issues"
