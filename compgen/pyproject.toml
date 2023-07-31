@@ -1,0 +1,33 @@
+
+[build-system]
+requires = ["setuptools>=61.0", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "compgen"
+authors = [
+    {name = "Barry Scott", email = "barry@barrys-emacs.org"},
+]
+description = "bash_compgen is a library to make it easier to write bash completion logic as external program"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache 2.0"}
+keywords = [ "development" ]
+classifiers = [
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Utilities",
+    "Environment :: Console",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+]
+dynamic = ["version"]
+
+[tool.setuptools.dynamic]
+version = {attr = "bash_compgen.VERSION"}
+
+[project.optional-dependencies]
+
+[project.urls]
+"Homepage" = "https://github.com/barry-scott/CLI-tools"
+"Bug Tracker" = "https://github.com/barry-scott/CLI-tools/issues"
