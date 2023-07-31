@@ -35,7 +35,7 @@ then
     build_tool update_linux --universal
 
 else
-    build_tool "${1}" "${2}"
+    build_tool "${1}" "${2:---universal}"
 fi
 
 ${PY} -m colour_text "<>green Info:<> twine check"
