@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61.0", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "colour-filter"
+authors = [
+    {name = "Barry Scott", email = "barry@barrys-emacs.org"},
+]
+description = "The colour-filter command reads lines from it's input, colours parts of the line and prints the result on it's output"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache 2.0"}
+keywords = [ "development" ]
+classifiers = [
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Utilities",
+    "Environment :: Console",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "colour-text",
+]
+dynamic = ["version"]
+
+[tool.setuptools.dynamic]
+version = {attr = "colour_filter.VERSION"}
+
+[project.optional-dependencies]
+
+[project.scripts]
+colour-filter = "colour_filter.__main__:main"
+
+[project.urls]
+"Homepage" = "https://github.com/barry-scott/CLI-tools"
+"Bug Tracker" = "https://github.com/barry-scott/CLI-tools/issues"
