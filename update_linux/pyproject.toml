@@ -11,6 +11,7 @@ description = "Command to automate the routine updating of packages and system u
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "Apache 2.0"}
+keywords = [ "development" ]
 classifiers = [
     "Intended Audience :: End Users/Desktop",
     "Topic :: Utilities",
