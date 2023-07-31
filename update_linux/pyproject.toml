@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61.0", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "update-linux"
+authors = [
+    {name = "Barry Scott", email = "barry@barrys-emacs.org"},
+]
+description = "Command to automate the routine updating of packages and system upgrading for Unix systems."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache 2.0"}
+classifiers = [
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Utilities",
+    "Environment :: Console",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "config-path",
+    "colour-text",
+    "ssh-wait",
+]
+dynamic = ["version"]
+
+[tool.setuptools.dynamic]
+version = {attr = "update_linux.VERSION"}
+
+[project.optional-dependencies]
+
+[project.scripts]
+update-linux = "update_linux.__main__:main"
+
+[project.urls]
+"Homepage" = "https://github.com/barry-scott/CLI-tools"
+"Bug Tracker" = "https://github.com/barry-scott/CLI-tools/issues"
