@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61.0", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smart-find"
+authors = [
+    {name = "Barry Scott", email = "barry@barrys-emacs.org"},
+]
+description = "smart-find makes it easier to access the advanced features of find and grep"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache 2.0"}
+keywords = [ "development" ]
+classifiers = [
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Utilities",
+    "Environment :: Console",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "colour-text",
+]
+dynamic = ["version"]
+
+[tool.setuptools.dynamic]
+version = {attr = "smart_find.VERSION"}
+
+[project.optional-dependencies]
+
+[project.scripts]
+smart-find = "smart_find.__main__:main"
+
+[project.urls]
+"Homepage" = "https://github.com/barry-scott/CLI-tools"
+"Bug Tracker" = "https://github.com/barry-scott/CLI-tools/issues"
