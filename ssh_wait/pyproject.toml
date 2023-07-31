@@ -27,7 +27,7 @@ version = {attr = "ssh_wait.VERSION"}
 [project.optional-dependencies]
 
 [project.scripts]
-update-linux = "ssh_wait.__main__:main"
+ssh-wait = "ssh_wait.__main__:main"
 
 [project.urls]
 "Homepage" = "https://github.com/barry-scott/CLI-tools"
