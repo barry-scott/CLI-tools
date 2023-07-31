@@ -38,14 +38,20 @@ function build_tool {
 
 if [[ "$1" = "" ]]
 then
-    build_tool colour_text
-    build_tool colour_filter
-    build_tool ssh_wait
-    build_tool smart_find
-    build_tool update_linux
+    build_tool colour_text |& tee colour_text.log
+    build_tool colour_filter |& tee colour_filter.log
+    build_tool ssh_wait |& tee ssh_wait.log
+    build_tool smart_find |& tee smart_find.log
+    build_tool update_linux |& tee update_linux.log
 
 else
-    build_tool "${1:?tool name}"
+    TOOL="${1:?tool name}"
+    if [[ ! -d "${TOOL}" ]]
+    then
+        ${PY} -m colour_text "<>error Error:<> unknown tool ${TOOL}"
+        exit 1
+    fi
+    build_tool "${TOOL}" |& tee "${TOOL}.log"
 fi
 
 ${PY} -m colour_text "<>green Info:<> Built wheels"
