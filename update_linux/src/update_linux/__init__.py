@@ -238,13 +238,13 @@ For help:
                 if host in all_to_exclude:
                     continue
 
-                os_plugin_type, os_id = self.detectOperatingSystem( host )
+                os_plugin_type, os_id, os_version = self.detectOperatingSystem( host )
                 if os_plugin_type is None:
                     if os_id is not None:
-                        self.warn( host, 'Unsupported OS type %s' % (os_id,) )
+                        self.warn( host, 'Unsupported OS type %s %s' % (os_id, os_version) )
                     continue
 
-                self.info( host, 'OS is %s. Using OS plugin %s' % (os_id, os_plugin_type) )
+                self.info( host, 'OS is %s %s. Using OS plugin %s' % (os_id, os_version, os_plugin_type) )
 
                 plugin = os_id_to_plugin[ os_plugin_type ]( self )
 
@@ -367,33 +367,38 @@ For help:
             rc = ssh_wait( host, wait=False, log_fn=None )
             if rc != 0:
                 self.warn( host, 'Is not reachable' )
-                return None, None
+                return None, None, None
 
         os_release = {}
 
-        cmd = ['cat', '/etc/os-release']
-        rc, stdout = self.runAndLog( host, cmd, log=False )
-        for line in stdout:
-            line = line.strip()
-            if line == '' or '=' not in line:
-                continue
+        try:
+            with open( '/etc/os-release' ) as f:
+                for line in f:
+                    line = line.strip()
+                    if line == '' or '=' not in line:
+                        continue
 
-            key, value = line.split( '=', 1 )
-            if value.startswith('"') and value.endswith('"'):
-                value = value[1:-1]
-            os_release[key] = value
+                    key, value = line.split( '=', 1 )
+                    if value.startswith('"') and value.endswith('"'):
+                        value = value[1:-1]
+                    os_release[key] = value
+
+        except IOError as e:
+            self.error( host, str(e) )
+            return None, None, None
 
         os_main_id = os_release.get('ID', None)
         os_id_set = set([os_main_id])
+        os_version_id = os_release.get('VERSION_ID', 'Unknown')
         if 'ID_LIKE' in os_release:
             for ID in os_release['ID_LIKE'].split():
                 os_id_set.add( ID )
 
         for os_id in os_id_set:
             if os_id in os_id_to_plugin:
-                return os_id, os_main_id
+                return os_id, os_main_id, os_version_id
 
-        return None, os_main_id
+        return None, os_main_id, os_version_id
 
     def reboot( self, host, cmd, wait_limit=600 ):
         while True:
@@ -578,17 +583,32 @@ class UpdatePluginFedora:
             if not self.app.opt_force_reboot:
                 return
 
+        # look for reasons to reboot
+        reboot_required = False
+
+        for line in stdout:
+            if line.startswith( 'Installed: kernel-' ):
+                self.app.info( 'Reboot required to install new kernel' )
+                reboot_required = True
+
+            elif( line.startswith( 'Installed: akmod-nvidia' )
+            or line.startswith( 'Upgraded: akmod-nvidia' ) ):
+                self.app.info( 'Reboot required to install new akmod-nvidia' )
+                reboot_required = True
+
         self.app.waitAllSystemdJobsFinished( host, update_log_name )
 
+        # see if there are an services that need a restart
         cmd = ['dnf', 'needs-restarting', '-r']
         rc, stdout = self.app.runAndLog( host, cmd )
-        if rc == 0:
-            self.app.info( host, 'No reboot required' )
-            return
+        if rc != 0:
+            self.app.info( host, 'Reboot required to restart services' )
+            reboot_required = True
 
-        self.app.info( host, 'Rebooting' )
-        if self.app.reboot( host, ['reboot'] ):
-            self.app.checkServices( host, status_log_name )
+        if reboot_required:
+            self.app.info( host, 'Rebooting' )
+            if self.app.reboot( host, ['reboot'] ):
+                self.app.checkServices( host, status_log_name )
 
     def systemUpgrade( self, host, target_release, upgrade_log_name ):
         current_release = self.releaseInfo( host )
