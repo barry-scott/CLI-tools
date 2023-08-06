@@ -605,10 +605,14 @@ class UpdatePluginFedora:
             self.app.info( host, 'Reboot required to restart services' )
             reboot_required = True
 
-        if reboot_required and host is not None:
-            self.app.info( host, 'Rebooting' )
-            if self.app.reboot( host, ['reboot'] ):
-                self.app.checkServices( host, status_log_name )
+        if reboot_required:
+            if host is None and not self.opt.opt_force_reboot:
+                self.app.info( host, 'Reboot is required - reboot at your convenience to complete update' )
+
+            else:
+                self.app.info( host, 'Rebooting' )
+                if self.app.reboot( host, ['reboot'] ):
+                    self.app.checkServices( host, status_log_name )
 
     def systemUpgrade( self, host, target_release, upgrade_log_name ):
         current_release = self.releaseInfo( host )
