@@ -14,7 +14,8 @@ update-linux uses ssh to run commands on the hosts being worked on.
 
 It assumes that it can `ssh root@<host>` without a password prompt.
 
-However when using the --self option to update localhost sudo will be used it not runming as root. This will prompt for the sudo password as necessary.
+However when using the --self option to update localhost sudo will be used if not running as root. This will prompt for the sudo password as necessary.
+Normally update-linux will reboot a host if that is required, but when working on --self no reboot is done unless --force-reboot is used.
 
 If running update-linux on a macOS system it is necessary to flush DNS so that freshly booted hosts can be accessed by host-name.
 
