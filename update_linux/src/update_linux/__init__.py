@@ -141,13 +141,14 @@ class UpdateFedora:
         self.opt_exclude = Option( '--exclude', None, value_type=str, value_name='<host>',
                             description='exclude the <host> from being updated'  )
         self.opt_force_reboot = Option( '--force-reboot', False,
-                            description='always reboot host even if no packages where updated' )
+                            description='reboot if required for --update --self.\n'
+                                        'For remote system --update always reboot host even if no packages where updated' )
         self.opt_install_package = Option( '--install-package', None, value_type=str, value_name='<package>',
                             description='install <package> only' )
         self.opt_list_config = Option( '--list-config', False,
                             description='list the configuration from the JSON config file' )
         self.opt_update_self = Option( '--self', False,
-                            description='apply commands to this computer')
+                            description='apply command to this computer')
 
         self.ct = ColourText()
         self.ct.initTerminal()
@@ -183,14 +184,20 @@ class UpdateFedora:
 
     %(appname)s version %(version)s
 
+    Run one of the commands --check, --update, --system-upgrade
+    or --install-package on a group of hosts.
+
     group - read from the JSON config file:
             %(config_file)s
 
-        each group is a list of hosts to be updated
+        each group is a list of hosts to act on
 
-    host - host to be updated
+    host - host to on
 
-    --self - update this computer
+    --self - commands apply to this computer.
+             By default on reboot is done.
+             Use --force-reboot to reboot when required
+             to complete the command.
 
     options:''' % {'appname': appname.name
                   ,'version': VERSION
