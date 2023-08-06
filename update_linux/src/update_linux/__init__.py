@@ -87,7 +87,7 @@ class Option:
                     ,{True: 'On', False: 'Off'}.get( self.default, self.default ) ))
 
         else:
-            all_help.append( '%s default %s' %
+            all_help.append( '%s (default %s)' %
                 (self.name
                 ,{True: 'On', False: 'Off'}.get( self.default, self.default ) ))
 
@@ -605,7 +605,7 @@ class UpdatePluginFedora:
             self.app.info( host, 'Reboot required to restart services' )
             reboot_required = True
 
-        if reboot_required:
+        if reboot_required and host is not None:
             self.app.info( host, 'Rebooting' )
             if self.app.reboot( host, ['reboot'] ):
                 self.app.checkServices( host, status_log_name )
