@@ -9,7 +9,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '3.0.0'
+VERSION = '3.0.1'
 
 default_json_config_template = u'''{
     "group":
@@ -378,21 +378,29 @@ For help:
 
         os_release = {}
 
-        try:
-            with open( '/etc/os-release' ) as f:
-                for line in f:
-                    line = line.strip()
-                    if line == '' or '=' not in line:
-                        continue
+        if host is None:
+            try:
+                with open( '/etc/os-release' ) as f:
+                    stdout = f.readlines()
 
-                    key, value = line.split( '=', 1 )
-                    if value.startswith('"') and value.endswith('"'):
-                        value = value[1:-1]
-                    os_release[key] = value
+            except IOError as e:
+                self.error( host, str(e) )
+                return None, None, None
 
-        except IOError as e:
-            self.error( host, str(e) )
-            return None, None, None
+        else:
+            cmd = ['cat', '/etc/os-release']
+            rc, stdout = self.runAndLog( host, cmd, log=False )
+
+        for line in stdout:
+            line = line.strip()
+            if line == '' or '=' not in line:
+                continue
+
+            key, value = line.split( '=', 1 )
+            if value.startswith('"') and value.endswith('"'):
+                value = value[1:-1]
+            os_release[key] = value
+
 
         os_main_id = os_release.get('ID', None)
         os_id_set = set([os_main_id])
