@@ -9,7 +9,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '3.0.1'
+VERSION = '3.0.2'
 
 default_json_config_template = u'''{
     "group":
@@ -366,7 +366,7 @@ For help:
 
         # mac often needs its DNS cache flushing as it will
         # not notice newly booted hosts
-        cmd = ['sudo', 'killall', '-HUP', 'mDNSResponder']
+        cmd = ['killall', '-HUP', 'mDNSResponder']
         self.runAndLog( None, cmd, log=False )
 
     def detectOperatingSystem( self, host ):
