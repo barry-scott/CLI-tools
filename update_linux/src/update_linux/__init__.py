@@ -9,7 +9,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '3.0.3'
+VERSION = '3.0.4'
 
 default_json_config_template = u'''{
     "group":
@@ -195,7 +195,7 @@ class UpdateFedora:
     host - host to on
 
     --self - commands apply to this computer.
-             By default on reboot is done.
+             By default no reboot is done.
              Use --force-reboot to reboot when required
              to complete the command.
 
@@ -600,11 +600,13 @@ class UpdatePluginFedora:
 
         # look for reasons to reboot
         reboot_required = False
+        reboot_kernel_info_done = False
 
         for line in stdout:
-            if line.startswith( 'Installed: kernel-' ):
+            if line.startswith( 'Installed: kernel-' ) and not reboot_kernel_info_done:
                 self.app.info( host, 'Reboot required to install new kernel' )
                 reboot_required = True
+                reboot_kernel_info_done = True
 
             elif( line.startswith( 'Installed: akmod-nvidia' )
             or line.startswith( 'Upgraded: akmod-nvidia' ) ):
@@ -621,7 +623,7 @@ class UpdatePluginFedora:
             reboot_required = True
 
         if reboot_required:
-            if host is None and not self.opt.opt_force_reboot:
+            if host is None and not self.app.opt.opt_force_reboot:
                 self.app.info( host, 'Reboot is required - reboot at your convenience to complete update' )
 
             else:
