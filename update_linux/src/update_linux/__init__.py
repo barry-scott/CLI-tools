@@ -9,7 +9,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '3.0.4'
+VERSION = '3.0.5'
 
 default_json_config_template = u'''{
     "group":
@@ -623,7 +623,7 @@ class UpdatePluginFedora:
             reboot_required = True
 
         if reboot_required:
-            if host is None and not self.app.opt.opt_force_reboot:
+            if host is None and not self.app.opt_force_reboot:
                 self.app.info( host, 'Reboot is required - reboot at your convenience to complete update' )
 
             else:
