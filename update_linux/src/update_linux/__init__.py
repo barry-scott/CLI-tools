@@ -9,7 +9,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '3.0.5'
+VERSION = '3.0.6'
 
 default_json_config_template = u'''{
     "group":
@@ -480,7 +480,10 @@ For help:
         elif os.getuid() != 0:
             cmd = ['sudo'] + cmd
 
-        self.debug( 'runAndLog( %s )' % (' '.join( cmd ),) )
+        self.debug( 'runAndLog( %s, log=%r )' % (' '.join( cmd ), log) )
+        if log:
+            self.info( host, 'Run command: %s' % (' '.join( cmd ),) )
+
         stdout = []
         p = subprocess.Popen( cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE )
         while True:
@@ -616,7 +619,7 @@ class UpdatePluginFedora:
         self.app.waitAllSystemdJobsFinished( host, update_log_name )
 
         # see if there are an services that need a restart
-        cmd = ['dnf', 'needs-restarting', '-r']
+        cmd = ['dnf', 'needs-restarting', '--services', '--reboothint']
         rc, stdout = self.app.runAndLog( host, cmd )
         if rc != 0:
             self.app.info( host, 'Reboot required to restart services' )
