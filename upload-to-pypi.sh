@@ -9,4 +9,4 @@ then
 fi
 
 tmp.venv/bin/python -m twine check ${PACKAGE}/dist/*
-tmp.venv/bin/python -m twine upload ${PACKAGE}/dist/*
+tmp.venv/bin/python -m twine upload -u __token__ -p $(<~/.config/pypi_token) ${PACKAGE}/dist/*
