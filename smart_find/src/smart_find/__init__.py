@@ -8,7 +8,7 @@ import subprocess
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '1.0.4'
+VERSION = '1.0.5'
 
 default_config_json = u'''{
     "folders_to_prune": [".svn", ".git", ".hg"],

@@ -10,7 +10,7 @@ authors = [
 description = "The colour-filter command reads lines from it's input, colours parts of the line and prints the result on it's output"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "Apache 2.0"}
+license = {text = "Apache-2.0"}
 keywords = [ "development" ]
 classifiers = [
     "Intended Audience :: End Users/Desktop",

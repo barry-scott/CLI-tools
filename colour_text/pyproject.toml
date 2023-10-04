@@ -10,7 +10,7 @@ authors = [
 description = "colour_text that makes printing coloured text easier to do on Unix, macOS and Windows"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "Apache 2.0"}
+license = {text = "Apache-2.0"}
 keywords = [ "development" ]
 classifiers = [
     "Intended Audience :: End Users/Desktop",

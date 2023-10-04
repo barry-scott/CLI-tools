@@ -2,7 +2,7 @@ from __future__ import print_function
 import time
 import socket
 
-VERSION='1.0.1'
+VERSION = '1.0.2'
 
 def ssh_wait( host, service='ssh', wait=True, wait_limit=600, log_fn=print ):
     try:

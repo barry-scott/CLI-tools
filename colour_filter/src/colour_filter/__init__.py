@@ -3,7 +3,7 @@ from __future__ import print_function
 import sys
 import re
 
-VERSION = '1.1.1'
+VERSION = '1.1.2'
 
 colour_names = {
     'bold':         '1',
