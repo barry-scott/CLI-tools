@@ -9,7 +9,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '3.0.7'
+VERSION = '3.1.0'
 
 default_json_config_template = u'''{
     "group":
@@ -639,8 +639,6 @@ class UpdatePluginFedora:
         if current_release >= target_release:
             self.app.info( host, 'Already running release %d' % (current_release,) )
             return
-
-        return
 
         self.app.info( host, 'Currently release %d' % (current_release,) )
 
