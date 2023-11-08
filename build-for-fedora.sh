@@ -3,7 +3,7 @@ set -e
 
 function usage() {
     cat <<EOF
-$0 copr-release|copr-testing <pypi-package>|--all
+$0 copr-release|copr-testing <pypi-package>|--all [<fedora-version>]
 EOF
 
 }
@@ -32,10 +32,21 @@ copr-testing)
     ;;
 esac
 
-. /etc/os-release
+case "$3" in
+[0-9][0-9])
+    RPM_ROOT=fedora-${3}
+    ;;
+"")
+    . /etc/os-release
+    RPM_ROOT=fedora-${VERSION_ID}
+    ;;
+*)
+    usage
+    exit 1
+    ;;
+esac
 
 # use user's arch for rpm
-RPM_ROOT=fedora-${VERSION_ID}
 
 case "$2" in
 --all)
