@@ -33,6 +33,10 @@ copr-testing)
 esac
 
 case "$3" in
+rawhide)
+    RPM_ROOT=fedora-${3}
+    ;;
+
 [0-9][0-9])
     RPM_ROOT=fedora-${3}
     ;;
