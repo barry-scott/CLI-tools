@@ -9,7 +9,7 @@ authors = [
 ]
 description = "Command to automate the routine updating of packages and system upgrading for Unix systems."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">= 3.10"
 license = {text = "Apache-2.0"}
 keywords = [ "development" ]
 classifiers = [
