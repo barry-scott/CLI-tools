@@ -9,7 +9,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '3.1.1'
+VERSION = '3.2.0'
 
 default_json_config_template = u'''{
     "group":
@@ -598,7 +598,7 @@ class UpdatePluginFedora:
 
         self.app.info( host, 'Starting Update' )
 
-        cmd = ['dnf', '-vy', 'update', '--refresh']
+        cmd = ['dnf', '-y', 'update', '--refresh']
         rc, stdout = self.app.runAndLog( host, cmd )
 
         self.app.writeLines( update_log_name, stdout )
