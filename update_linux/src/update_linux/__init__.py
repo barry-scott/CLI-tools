@@ -9,7 +9,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '3.2.0'
+VERSION = '3.2.1'
 
 default_json_config_template = u'''{
     "group":
@@ -369,6 +369,7 @@ For help:
         cmd = ['killall', '-HUP', 'mDNSResponder']
         self.runAndLog( None, cmd, log=False )
 
+
     def detectOperatingSystem( self, host ):
         if host is not None:
             rc = ssh_wait( host, wait=False, log_fn=None )
@@ -393,6 +394,13 @@ For help:
 
         for line in stdout:
             line = line.strip()
+            if line.startswith('@@@'):
+                self.warn( host, 'ssh warning detected - please fix' )
+                for line in stdout:
+                    print( self.ct( '<>proc %s<>: %s' % (host or 'localhost', line.rstrip()) ) )
+
+                return None, None, None
+
             if line == '' or '=' not in line:
                 continue
 
@@ -400,7 +408,6 @@ For help:
             if value.startswith('"') and value.endswith('"'):
                 value = value[1:-1]
             os_release[key] = value
-
 
         os_main_id = os_release.get('ID', None)
         os_id_set = set([os_main_id])
