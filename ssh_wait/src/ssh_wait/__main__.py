@@ -73,9 +73,14 @@ def main( argv=None ):
     else:
         log_fn = None
 
-    return ssh_wait.ssh_wait( host, service=service,
-                     wait=opt_wait, wait_limit=wait_limit,
-                     log_fn=log_fn )
+    try:
+        return ssh_wait.ssh_wait(
+                    host, service=service,
+                    wait=opt_wait, wait_limit=wait_limit,
+                    log_fn=log_fn )
+
+    except KeyboardInterrupt:
+        return 1
 
 if __name__ == '__main__':
     sys.exit( main() )
