@@ -9,7 +9,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '3.2.1'
+VERSION = '3.3.0'
 
 default_json_config_template = u'''{
     "group":
@@ -673,7 +673,7 @@ class UpdatePluginFedora:
 
         self.app.info( host, 'Rebooting to install system-upgrade' )
         # upgrades of lots of packages can be slow - wait for 45 minutes
-        if self.app.reboot( host, ['dnf', 'system-upgrade', 'reboot'], wait_limit=45*60 ):
+        if self.app.reboot( host, ['dnf', 'system-upgrade', 'reboot', '--assumeyes'], wait_limit=45*60 ):
             self.app.checkServices( host, upgrade_log_name )
 
         self.app.info( host, 'Now running release %d' % (self.releaseInfo( host ),) )
