@@ -9,7 +9,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '3.3.1'
+VERSION = '3.3.2'
 
 default_json_config_template = u'''{
     "group":
@@ -431,7 +431,8 @@ For help:
                 if line.startswith(
                         ('Warning: '
                         ,'Offending key for '
-                        ,'Matching host key in ')):
+                        ,'Matching host key in '
+                        ,'The system will now reboot')):
                     continue
                 filtered_stdout.append(line)
 
