@@ -9,7 +9,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '3.3.2'
+VERSION = '3.3.3'
 
 default_json_config_template = u'''{
     "group":
@@ -574,7 +574,7 @@ class UpdatePluginFedora:
             self.app.warn( host, 'Updates available. See<> <>file %s<> <>em for details' % (check_log_name,) )
 
         else:
-            self.app.error( host, 'check-update failed' )
+            self.app.error( host, 'check-update failed. See<> <>file %s<> <>em for details' % (check_log_name,) )
 
         self.app.checkServices( host, check_log_name )
 
@@ -612,7 +612,7 @@ class UpdatePluginFedora:
         self.app.writeLines( update_log_name, stdout )
 
         if rc != 0:
-            self.app.error( host, 'Update failed' )
+            self.app.error( host, 'Update failed. See<> <>file %s<> <>em for details' % (update_log_name,) )
             return
 
         if 'Nothing to do.\n' in stdout:
