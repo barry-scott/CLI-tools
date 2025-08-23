@@ -9,7 +9,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '3.4.0'
+VERSION = '3.4.1'
 
 default_json_config_template = u'''{
     "group":
@@ -170,14 +170,14 @@ class UpdateFedora:
 
         positional_args = []
 
-        if not self.loadConfig():
-            return 1
-
         try:
             parseOptions( self, positional_args, args )
 
         except OptionError as e:
             self.error( '', str(e) )
+            return 1
+
+        if not self.loadConfig():
             return 1
 
         if self.opt_help:
@@ -349,7 +349,9 @@ For help:
                 f.write( json_config )
 
         else:
-            self.info( '', 'Using config from %s' % (config_file,) )
+            if not self.opt_list_hosts:
+                self.info( '', 'Using config from %s' % (config_file,) )
+
             with open(config_file) as f:
                 json_config = f.read()
 
