@@ -9,7 +9,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '3.3.3'
+VERSION = '3.4.0'
 
 default_json_config_template = u'''{
     "group":
@@ -138,8 +138,8 @@ class UpdateFedora:
                             description='perform update of installed packages' )
         self.opt_system_upgrade = Option( '--system-upgrade', None, value_type=int, value_name='<version>',
                             description='perform a system upgrade to version <version>' )
-        self.opt_exclude = Option( '--exclude', None, value_type=str, value_name='<host>',
-                            description='exclude the <host> from being updated'  )
+        self.opt_exclude = Option( '--exclude', None, value_type=str, value_name='<group>|<host>[,<group>|<host>',
+                            description='exclude the <host> or hosts in a <group> from being updated' )
         self.opt_force_reboot = Option( '--force-reboot', False,
                             description='reboot if required for --update --self.\n'
                                         'For remote system --update always reboot host even if no packages where updated' )
@@ -147,6 +147,8 @@ class UpdateFedora:
                             description='install <package> only' )
         self.opt_list_config = Option( '--list-config', False,
                             description='list the configuration from the JSON config file' )
+        self.opt_list_hosts = Option( '--list-hosts', False,
+                            description='list the matching hostnames' )
         self.opt_update_self = Option( '--self', False,
                             description='apply command to this computer')
 
@@ -220,7 +222,8 @@ class UpdateFedora:
 
         all_to_exclude = []
         if self.opt_exclude:
-            all_to_exclude = self.all_groups.get( self.opt_exclude(), self.opt_exclude() )
+            for host in self.opt_exclude().split(','):
+                all_to_exclude.extend( self.all_groups.get( host, host ) )
 
         if self.opt_update_self:
             self.all_hosts = [None]
@@ -228,12 +231,21 @@ class UpdateFedora:
             self.all_hosts = list( self.hostIter( positional_args ) )
 
         if len(self.all_hosts) == 0:
-            self.error( '', 'No hosts to update' )
+            self.error( '', 'No hosts selected' )
             print('''
 For help:
     %s --help
 ''' % (appname.name,))
             return 1
+
+        if self.opt_list_hosts:
+            for host in self.all_hosts:
+                if host in all_to_exclude:
+                    continue
+
+                print(host)
+
+            return 0
 
         self.summary_log_name = self.logdir / ('update-summary-%s.log' % (self.ts,))
 

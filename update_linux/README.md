@@ -114,38 +114,61 @@ For a system-upgrade these steps are used:
 ## update-linux command
 
 ```
-Usage: update-linux <options> <group>|<host>...
+Usage: update-linux <options> <group>|<host>|--self...
+
+    update-linux version 3.4.0
+
+    Run one of the commands --check, --update, --system-upgrade
+    or --install-package on a group of hosts.
+
     group - read from the JSON config file:
             /home/barry/.config/org.barrys-emacs.update-linux.json
 
-        each group is a list of hosts to be updated
+        each group is a list of hosts to act on
 
-    host - host to be updated
+    host - host to on
+
+    --self - commands apply to this computer.
+             By default no reboot is done.
+             Use --force-reboot to reboot when required
+             to complete the command.
 
     options:
-        --check default Off
+        --check (default Off)
             check if update is required
 
-        --debug default Off
+        --debug (default Off)
             print debug messages
 
-        --exclude=<host> default None
-            exclude the <host> from being updated
+        --exclude=<group>|<host>[,<group>|<host>]
+            exclude the <host> or host in a <group> from being updated
 
-        --force-reboot default Off
-            always reboot host even if no packages where updated
+        --force-reboot (default Off)
+            reboot if required for --update --self.
+            For remote system --update always reboot host even if no packages where updated
 
-        --help default Off
+        --help (default Off)
             print this help
 
-        --install-package=<package> default None
+        --install-package=<package>
             install <package> only
 
-        --list-config default Off
+        --list-config (default Off)
             list the configuration from the JSON config file
 
-        --system-upgrade=<version> default None
+        --list-hosts (default Off)
+            list the matching hostnames
+
+        --system-upgrade=<version>
             perform a system upgrade to version <version>
+
+        --update (default Off)
+            perform update of installed packages
+
+        --self (default Off)
+            apply command to this computer
+
+
 ```
 
 ## update-linux log files
