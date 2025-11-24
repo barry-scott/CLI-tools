@@ -9,7 +9,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '3.4.1'
+VERSION = '3.4.2'
 
 default_json_config_template = u'''{
     "group":
@@ -223,7 +223,7 @@ class UpdateFedora:
         all_to_exclude = []
         if self.opt_exclude:
             for host in self.opt_exclude().split(','):
-                all_to_exclude.extend( self.all_groups.get( host, host ) )
+                all_to_exclude.extend( self.all_groups.get( host, [host] ) )
 
         if self.opt_update_self:
             self.all_hosts = [None]
