@@ -639,13 +639,15 @@ class UpdatePluginFedora:
         reboot_kernel_info_done = False
 
         for line in stdout:
-            if line.startswith( ('Installed: kernel-', 'Installing kernel-') ) and not reboot_kernel_info_done:
+            if (line.startswith( 'Installed: kernel-' ) or 'Installing kernel-' in line) and not reboot_kernel_info_done:
                 self.app.info( host, 'Reboot required to install new kernel' )
                 reboot_required = True
                 reboot_kernel_info_done = True
 
-            elif( line.startswith( ('Installed: akmod-nvidia', 'Installing akmod-nvidia') )
-            or line.startswith( 'Upgraded: akmod-nvidia' ) ):
+            elif( line.startswith( 'Installed: akmod-nvidia' )
+            or 'Installing akmod-nvidia' in line
+            or line.startswith( 'Upgraded: akmod-nvidia' )
+            or 'Upgrading akmod-nvidia' in line ):
                 self.app.info( host, 'Reboot required to install new akmod-nvidia' )
                 reboot_required = True
 
