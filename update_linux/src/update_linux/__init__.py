@@ -9,7 +9,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '3.4.2'
+VERSION = '3.5.0'
 
 default_json_config_template = u'''{
     "group":
@@ -639,12 +639,12 @@ class UpdatePluginFedora:
         reboot_kernel_info_done = False
 
         for line in stdout:
-            if line.startswith( 'Installed: kernel-' ) and not reboot_kernel_info_done:
+            if line.startswith( ('Installed: kernel-', 'Installing kernel-') ) and not reboot_kernel_info_done:
                 self.app.info( host, 'Reboot required to install new kernel' )
                 reboot_required = True
                 reboot_kernel_info_done = True
 
-            elif( line.startswith( 'Installed: akmod-nvidia' )
+            elif( line.startswith( ('Installed: akmod-nvidia', 'Installing akmod-nvidia') )
             or line.startswith( 'Upgraded: akmod-nvidia' ) ):
                 self.app.info( host, 'Reboot required to install new akmod-nvidia' )
                 reboot_required = True

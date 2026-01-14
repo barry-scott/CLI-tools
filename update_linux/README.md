@@ -47,7 +47,9 @@ For an update the following steps are performed:
 
 1. Check if a reboot is needed.
 
-    `dnf needs-restart -r`
+    `dnf needs-restart --services --reboothint`
+
+    If a kernel-* or akmods-nvidia package is installed then reboot. 
 
 1. Reboot the host
 
@@ -78,12 +80,12 @@ With the `--check` options these steps are performed:
 ## update-linux system-upgrade process
 
 ```
-$ update-linux --system-upgrade=38 host
+$ update-linux --system-upgrade=43 host
 ```
 
 For a system-upgrade update-linux will update one release at a time.
 
-This means that a host running Fedora 36 that is being upgraded to Fedora 38 will first be upgraded to Fedora 37.
+This means that a host running Fedora 41 that is being upgraded to Fedora 43 will first be upgraded to Fedora 42.
 
 This is done as it is the safer then attempting skip over releases that can have required side-effects.
 
@@ -116,7 +118,7 @@ For a system-upgrade these steps are used:
 ```
 Usage: update-linux <options> <group>|<host>|--self...
 
-    update-linux version 3.4.0
+    update-linux version 3.5.0
 
     Run one of the commands --check, --update, --system-upgrade
     or --install-package on a group of hosts.
