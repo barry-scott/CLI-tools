@@ -9,7 +9,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '3.5.1'
+VERSION = '3.5.2'
 
 default_json_config_template = u'''{
     "group":
@@ -257,6 +257,8 @@ For help:
                 if host in all_to_exclude:
                     continue
 
+                self.flushDns()
+
                 os_plugin_type, os_id, os_version = self.detectOperatingSystem( host )
                 if os_plugin_type is None:
                     if os_id is not None:
@@ -267,7 +269,6 @@ For help:
 
                 plugin = os_id_to_plugin[ os_plugin_type ]( self )
 
-                self.flushDns()
                 if self.opt_check:
                     plugin.check( host,
                         check_log_name=self.logdir / ('check-update-%s-%s.log' % (host or 'localhost', self.ts)) )
@@ -382,7 +383,6 @@ For help:
         # not notice newly booted hosts
         cmd = ['killall', '-HUP', 'mDNSResponder']
         self.runAndLog( None, cmd, log=False )
-
 
     def detectOperatingSystem( self, host ):
         if host is not None:
