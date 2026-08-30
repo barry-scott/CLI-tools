@@ -9,7 +9,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '3.5.2'
+VERSION = '3.5.3'
 
 default_json_config_template = u'''{
     "group":
@@ -671,30 +671,32 @@ class UpdatePluginFedora:
                     self.app.checkServices( host, status_log_name )
 
     def systemUpgrade( self, host, target_release, upgrade_log_name ):
-        current_release = self.releaseInfo( host )
-        if current_release >= target_release:
-            self.app.info( host, 'Already running release %d' % (current_release,) )
-            return
+        while True:
+            current_release = self.releaseInfo( host )
+            if current_release >= target_release:
+                self.app.info( host, 'Already running release %d' % (current_release,) )
+                return
 
-        self.app.info( host, 'Currently release %d' % (current_release,) )
+            self.app.info( host, 'Currently release %d' % (current_release,) )
 
-        # only update by one release at a time
-        next_release = current_release + 1
+            # only update by one release at a time
+            next_release = current_release + 1
 
-        cmd = ['dnf', 'system-upgrade', 'download', '--releasever=%d' % (next_release,), '--assumeyes']
-        rc, stdout = self.app.runAndLog( host, cmd )
-        self.app.writeLines( upgrade_log_name, stdout )
+            cmd = ['dnf', 'system-upgrade', 'download', '--releasever=%d' % (next_release,), '--assumeyes']
+            rc, stdout = self.app.runAndLog( host, cmd )
+            self.app.writeLines( upgrade_log_name, stdout )
 
-        if rc != 0:
-            self.app.error( host, 'Failure to download release %d' % (next_release,) )
-            return
+            if rc != 0:
+                self.app.error( host, 'Failure to download release %d' % (next_release,) )
+                return
 
-        self.app.info( host, 'Rebooting to install system-upgrade' )
-        # upgrades of lots of packages can be slow - wait for 45 minutes
-        if self.app.reboot( host, ['dnf', 'system-upgrade', 'reboot', '--assumeyes'], wait_limit=45*60 ):
-            self.app.checkServices( host, upgrade_log_name )
+            self.app.info( host, 'Rebooting to install system-upgrade' )
+            # upgrades of lots of packages can be slow - wait for 45 minutes
+            if self.app.reboot( host, ['dnf', 'system-upgrade', 'reboot', '--assumeyes'], wait_limit=45*60 ):
+                if not self.app.checkServices( host, upgrade_log_name ):
+                    return
 
-        self.app.info( host, 'Now running release %d' % (self.releaseInfo( host ),) )
+            self.app.info( host, 'Now running release %d' % (self.releaseInfo( host ),) )
 
     def releaseInfo( self, host ):
         cmd = ['cat', '/etc/system-release-cpe']
