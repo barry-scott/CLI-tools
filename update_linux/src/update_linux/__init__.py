@@ -9,7 +9,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '3.5.3'
+VERSION = '3.5.4'
 
 default_json_config_template = u'''{
     "group":
@@ -386,7 +386,9 @@ For help:
 
     def detectOperatingSystem( self, host ):
         if host is not None:
-            rc = ssh_wait( host, wait=False, log_fn=None )
+            # use a short wait limit as one attempt is seen to
+            # fail to connect to VMs sometimes on macOS
+            rc = ssh_wait( host, wait_limit=0.5, log_fn=None )
             if rc != 0:
                 self.warn( host, 'Is not reachable' )
                 return None, None, None
