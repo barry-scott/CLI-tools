@@ -3,7 +3,7 @@ import update_linux
 
 def main():
     try:
-        sys.exit( update_linux.UpdateFedora().main( sys.argv ) )
+        sys.exit( update_linux.UpdateLinux().main( sys.argv ) )
 
     except KeyboardInterrupt:
         print()

@@ -9,7 +9,7 @@ import tempfile
 import json
 from config_path import ConfigPath  # type: ignore
 
-VERSION = '3.5.4'
+VERSION = '3.5.5'
 
 default_json_config_template = u'''{
     "group":
@@ -125,7 +125,7 @@ def printOptionsHelp( storage ):
                 print( '        %s' % (line,) )
             print()
 
-class UpdateFedora:
+class UpdateLinux:
     def __init__( self ):
         self.all_hosts = []
         self.opt_help = Option( '--help', False,
