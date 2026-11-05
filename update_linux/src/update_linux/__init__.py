@@ -692,6 +692,11 @@ class UpdatePluginFedora:
                 self.app.error( host, 'Failure to download release %d' % (next_release,) )
                 return
 
+            # make sure clock epoch allows RPM package certificates
+            # to pass date checks on system without an RTC
+            cmd = ['touch', '/usr/lib/clock-epoch']
+            self.app.runAndLog( host, cmd )
+
             self.app.info( host, 'Rebooting to install system-upgrade' )
             # upgrades of lots of packages can be slow - wait for 45 minutes
             if self.app.reboot( host, ['dnf', 'system-upgrade', 'reboot', '--assumeyes'], wait_limit=45*60 ):
