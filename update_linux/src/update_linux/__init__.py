@@ -674,15 +674,15 @@ class UpdatePluginFedora:
 
     def systemUpgrade( self, host, target_release, upgrade_log_name ):
         while True:
-            current_release = self.releaseInfo( host )
-            if current_release >= target_release:
-                self.app.info( host, 'Already running release %d' % (current_release,) )
+            previous_release = self.releaseInfo( host )
+            if previous_release >= target_release:
+                self.app.info( host, 'Already running release %d' % (previous_release,) )
                 return
 
-            self.app.info( host, 'Currently release %d' % (current_release,) )
+            self.app.info( host, 'Currently release %d' % (previous_release,) )
 
             # only update by one release at a time
-            next_release = current_release + 1
+            next_release = previous_release + 1
 
             cmd = ['dnf', 'system-upgrade', 'download', '--releasever=%d' % (next_release,), '--assumeyes']
             rc, stdout = self.app.runAndLog( host, cmd )
@@ -698,7 +698,12 @@ class UpdatePluginFedora:
                 if not self.app.checkServices( host, upgrade_log_name ):
                     return
 
-            self.app.info( host, 'Now running release %d' % (self.releaseInfo( host ),) )
+            current_release = self.releaseInfo( host )
+            if current_release == previous_release:
+                self.app.error( host, 'Update failed to upgrade since running release %d' % (current_release,))
+                return
+            else:
+                self.app.info( host, 'Now running release %d' % (current_release,) )
 
     def releaseInfo( self, host ):
         cmd = ['cat', '/etc/system-release-cpe']
